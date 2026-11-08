@@ -10,7 +10,7 @@ data class BookingEntity(
     val serverId: Long? = null,
     val userId: Long,
     val userName: String? = null,
-    val vehicleId: Long,
+    val vehicleId: Long?,
     val vehiclePlate: String? = null,
     val serviceId: Long,
     val serviceName: String? = null,

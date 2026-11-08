@@ -22,6 +22,11 @@ class UserController extends Controller
         return view('backend.admin.users.create');
     }
 
+    public function show(User $user)
+    {
+        return view('backend.admin.users.show', compact('user'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -85,11 +90,17 @@ class UserController extends Controller
     {
         abort_if($user->is(auth()->user()), 422, 'Akun yang sedang digunakan tidak dapat dihapus.');
 
+        if ($user->hasBusinessHistory()) {
+            return back()->withErrors([
+                'user' => 'Akun memiliki riwayat kendaraan, layanan, transaksi, atau audit dan tidak dapat dihapus.',
+            ]);
+        }
+
+        $user->delete();
         if ($user->photo) {
             Storage::disk('public')->delete($user->photo);
         }
 
-        $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
     }
 }

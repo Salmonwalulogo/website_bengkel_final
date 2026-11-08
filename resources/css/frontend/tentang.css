@@ -80,7 +80,7 @@
             border-radius: 15px;
         }
         .stat-item h3 {
-            font-size: 3rem;
+            font-size: clamp(1.15rem, 2vw, 1.6rem);
             font-weight: 900;
             color: var(--primary);
             margin: 0;
@@ -89,6 +89,7 @@
             color: #64748b;
             margin: 10px 0 0 0;
             font-weight: 600;
+            font-size: .92rem;
         }
         footer {
             background: var(--dark);

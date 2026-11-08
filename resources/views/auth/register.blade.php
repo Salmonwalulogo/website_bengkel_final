@@ -1,6 +1,6 @@
     @vite('resources/css/auth-pages/register.css')
 <x-guest-layout>
-<div class="auth-card-header"><div class="auth-kicker">Mulai lebih teratur</div><h2>Buat akun bengkel</h2><p>Simpan kendaraan dan booking servis Anda dalam satu tempat.</p></div>
+<div class="auth-card-header"><div class="auth-kicker">Mulai bersama UD Rumah Daun</div><h2>Buat akun pelanggan</h2><p>Daftar untuk memesan jasa dan layanan serta memantau pesanan Anda.</p></div>
 <form method="POST" action="{{ route('register') }}">
     @csrf
     <div class="auth-field"><label for="name">Nama lengkap</label><input id="name" class="auth-input" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"><x-input-error :messages="$errors->get('name')" class="auth-error" /></div>

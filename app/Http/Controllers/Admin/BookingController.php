@@ -24,27 +24,39 @@ class BookingController extends Controller
     {
         $customers = User::where('role', 'customer')->get();
         $services = Service::where('status', 'active')->get();
-        $vehicles = Vehicle::all();
+        $vehicles = Vehicle::with('user')->get();
         return view('backend.admin.bookings.create', compact('customers', 'services', 'vehicles'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'vehicle_id' => 'required|exists:vehicles,id',
-            'service_id' => 'required|exists:services,id',
+            'user_id' => [
+                'required',
+                Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'customer')),
+            ],
+            'vehicle_id' => [
+                'nullable',
+                Rule::exists('vehicles', 'id')->where(fn ($query) => $query->where('user_id', $request->input('user_id'))),
+            ],
+            'service_id' => ['required', Rule::exists('services', 'id')->where(fn ($query) => $query->where('status', 'active'))],
             'booking_date' => 'required|date',
-            'booking_time' => 'required',
-            'complaint' => 'nullable|string',
-            'notes' => 'nullable|string',
+            'booking_time' => 'required|date_format:H:i',
+            'request_details' => 'nullable|string|max:3000',
+            'quoted_price' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:2000',
             'status' => 'required|in:pending,confirmed,in_progress,completed,cancelled',
         ]);
+
+        if ($validated['status'] === 'confirmed' && ($validated['quoted_price'] ?? null) === null
+            && (float) Service::findOrFail($validated['service_id'])->harga <= 0) {
+            return back()->withErrors(['quoted_price' => 'Tetapkan harga konfirmasi sebelum menyetujui permintaan layanan ini.'])->withInput();
+        }
 
         Booking::create($validated);
 
         return redirect()->route('admin.bookings.index')
-            ->with('success', 'Booking berhasil ditambahkan.');
+            ->with('success', 'Permintaan layanan berhasil ditambahkan.');
     }
 
     public function show(Booking $booking)
@@ -59,7 +71,7 @@ class BookingController extends Controller
         $services = Service::where('status', 'active')
             ->orWhere('id', $booking->service_id)
             ->get();
-        $vehicles = Vehicle::all();
+        $vehicles = Vehicle::with('user')->get();
         return view('backend.admin.bookings.edit', compact('booking', 'customers', 'services', 'vehicles'));
     }
 
@@ -71,16 +83,32 @@ class BookingController extends Controller
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'customer')),
             ],
             'vehicle_id' => [
-                'required',
+                'nullable',
                 Rule::exists('vehicles', 'id')->where(fn ($query) => $query->where('user_id', $request->input('user_id'))),
             ],
-            'service_id' => 'required|exists:services,id',
+            'service_id' => [
+                'required',
+                Rule::exists('services', 'id')->where(fn ($query) => $query
+                    ->where('status', 'active')
+                    ->orWhere('id', $booking->service_id)),
+            ],
             'booking_date' => 'required|date',
             'booking_time' => 'required|date_format:H:i',
-            'complaint' => 'nullable|string|max:2000',
+            'request_details' => 'nullable|string|max:3000',
+            'quoted_price' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:2000',
             'status' => 'required|in:pending,confirmed,in_progress,completed,cancelled',
         ]);
+
+        if ($validated['status'] === 'confirmed' && ($validated['quoted_price'] ?? null) === null
+            && (float) Service::findOrFail($validated['service_id'])->harga <= 0) {
+            return back()->withErrors(['quoted_price' => 'Tetapkan harga konfirmasi sebelum menyetujui permintaan layanan ini.'])->withInput();
+        }
+
+        if ($booking->transaction()->exists()
+            && (float) ($validated['quoted_price'] ?? 0) !== (float) ($booking->quoted_price ?? 0)) {
+            return back()->withErrors(['quoted_price' => 'Harga tidak dapat diubah setelah pembayaran dicatat.'])->withInput();
+        }
 
         $booking->update($validated);
 
@@ -90,9 +118,16 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking)
     {
-        $booking->delete();
+        if (! in_array($booking->status, ['pending', 'confirmed'], true)
+            || $booking->transaction()->exists()) {
+            return back()->withErrors([
+                'booking' => 'Permintaan yang sudah dikerjakan atau dibayar tidak dapat dihapus atau dibatalkan.',
+            ]);
+        }
+
+        $booking->update(['status' => 'cancelled']);
 
         return redirect()->route('admin.bookings.index')
-            ->with('success', 'Booking berhasil dihapus.');
+            ->with('success', 'Permintaan layanan dibatalkan. Riwayat tetap tersimpan.');
     }
 }

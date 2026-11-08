@@ -3,56 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rumah Daun Bengkel Otomotif - Servis Motor Profesional & Terpercaya</title>
-    <meta name="description" content="Bengkel motor profesional dengan teknisi berpengalaman. Servis rutin, tune up, ganti oli, dan perbaikan motor dengan harga terjangkau.">
-    
-    <!-- Bootstrap & Icons -->
+    <title>UD Rumah Daun | Beragam Jasa dan Layanan</title>
+    <meta name="description" content="UD Rumah Daun menyediakan beragam jasa, layanan, produk, penyewaan, dan transportasi. Pesan layanan melalui website.">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     @vite('resources/css/frontend/frontend.css')
-
-    
     @vite('resources/css/frontend/home.css')
+    @vite('resources/css/frontend/navigation.css')
     @vite('resources/js/frontend.js')
 </head>
-<body class="frontend-page">
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="container">
-            <a href="{{ route('home') }}" class="navbar-brand">
-                <img src="{{ asset('images/logo-rumah-daun.png') }}" alt="Rumah Daun Bengkel Otomotif"  class="page-style-1">
-                <div class="brand-text">
-                    <h1>RUMAH DAUN</h1>
-                    <span>BENGKEL OTOMOTIF</span>
-                </div>
-            </a>
-            <button class="nav-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="nav-links">
-                <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
-                <a href="{{ route('layanan') }}" class="{{ request()->routeIs('layanan') ? 'active' : '' }}">Layanan</a>
-                <a href="{{ route('produk') }}" class="{{ request()->routeIs('produk') ? 'active' : '' }}">Produk</a>
-                <a href="{{ route('tentang') }}" class="{{ request()->routeIs('tentang') ? 'active' : '' }}">Tentang</a>
-                <a href="#lokasi">Lokasi</a>
-                <a href="{{ route('kontak') }}" class="{{ request()->routeIs('kontak') ? 'active' : '' }}">Kontak</a>
-                @auth
-                    <a href="{{ url('/dashboard') }}" class="btn-nav btn-login">Dashboard</a>
-                @else
-                    <a href="{{ route('login') }}" class="btn-nav btn-login">Login</a>
-                    <a href="{{ route('register') }}" class="btn-nav btn-register">Register</a>
-                @endauth
-            </div>
-        </div>
-    </nav>
+<body class="frontend-page" data-user-role="{{ auth()->user()?->role ?? 'guest' }}" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+    @include('frontend.partials.navigation')
 
-    <!-- Hero Section -->
     <section class="hero" id="beranda">
         <div class="container">
             <div class="row align-items-center">
@@ -60,36 +25,20 @@
                     <div class="hero-content" data-aos="fade-right">
                         <div class="hero-badge">
                             <i class="bi bi-star-fill"></i>
-                            Bengkel Terpercaya No. 1
+                            Beragam jasa untuk kebutuhan Anda
                         </div>
                         <h1>
-                            Servis Motor Profesional
-                            <span>Berkualitas & Terpercaya</span>
+                            UD Rumah Daun
+                            <span>                            Beragam jasa, produk, sewa, dan layanan untuk Anda</span>
                         </h1>
                         <p>
-                            Rumah Daun Bengkel Otomotif menghadirkan layanan perawatan, tune up, 
-                            servis rutin, dan perbaikan motor dengan teknisi berpengalaman dan 
-                            suku cadang berkualitas.
+                            Jelajahi berbagai jasa dan layanan UD Rumah Daun. Kirim permintaan melalui website dan pantau konfirmasinya dari akun pelanggan Anda.
                         </p>
                         <div class="hero-buttons">
-                            @auth
-                                @if(auth()->user()->role === 'customer')
-                                    <a href="{{ route('customer.booking.create') }}" class="btn-hero btn-primary-hero">
-                                        <i class="bi bi-calendar2-check"></i>
-                                        Booking Servis
-                                    </a>
-                                @else
-                                    <a href="{{ url('/dashboard') }}" class="btn-hero btn-primary-hero">
-                                        <i class="bi bi-grid"></i>
-                                        Buka Dashboard
-                                    </a>
-                                @endif
-                            @else
-                                <a href="{{ route('login') }}" class="btn-hero btn-primary-hero">
-                                    <i class="bi bi-calendar2-check"></i>
-                                    Booking Servis
-                                </a>
-                            @endauth
+                            <a href="{{ route('layanan') }}" class="btn-hero btn-primary-hero">
+                                <i class="bi bi-calendar-check"></i>
+                                Pesan Layanan
+                            </a>
                             <a href="{{ route('produk') }}" class="btn-hero btn-primary-hero">
                                 <i class="bi bi-cart3"></i>
                                 Lihat Produk
@@ -99,27 +48,19 @@
                                 Layanan Kami
                             </a>
                         </div>
-                        <div class="hero-stats">
-                            <div class="stat-item">
-                                <h3>5000+</h3>
-                                <p>Pelanggan Puas</p>
-                            </div>
-                            <div class="stat-item">
-                                <h3>10+</h3>
-                                <p>Tahun Pengalaman</p>
-                            </div>
-                            <div class="stat-item">
-                                <h3>50+</h3>
-                                <p>Produk Terbaik</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6" data-aos="fade-left">
                     <div class="hero-console">
-                        <div class="console-top"><span>STATUS BENGKEL</span><span class="console-live"><i class="bi bi-circle-fill me-1"></i> Buka hari ini</span></div>
-                        <div class="console-bike"><i class="bi bi-motorcycle"></i></div>
-                        <div class="console-status"><span class="console-check"><i class="bi bi-check2"></i></span><div><strong>Perawatan lebih terarah</strong><small>Booking, produk, dan riwayat tersimpan rapi.</small></div></div>
+                        <div class="console-top"><span>STATUS USAHA</span><span class="console-live"><i class="bi bi-circle-fill me-1"></i> Siap melayani</span></div>
+                        <div class="service-showcase" aria-label="Layanan UD Rumah Daun">
+                            @forelse($services->take(5) as $service)
+                                <div class="service-showcase-item"><i class="bi bi-stars"></i><span>{{ $service->name }}</span></div>
+                            @empty
+                                <div class="service-showcase-item"><i class="bi bi-shop"></i><span>Produk dan layanan</span></div>
+                            @endforelse
+                        </div>
+                        <div class="console-status"><span class="console-check"><i class="bi bi-check2"></i></span>                        <div><strong>Permintaan terpantau</strong><small>Admin akan mengonfirmasi ketersediaan sebelum pembayaran diproses.</small></div></div>
                     </div>
                 </div>
             </div>
@@ -131,40 +72,26 @@
         <div class="container">
             <div class="section-header" data-aos="fade-up">
                 <span class="section-tag">
-                    <i class="bi bi-tools"></i> Layanan Kami
+                    <i class="bi bi-grid"></i> Layanan Kami
                 </span>
-                <h2>Solusi Lengkap Untuk <span>Motor Anda</span></h2>
-                <p>Kami menyediakan berbagai layanan profesional untuk menjaga performa motor Anda tetap optimal</p>
+                <h2>Beragam Layanan <span>UD Rumah Daun</span></h2>
+                <p>Kirim permintaan layanan secara online. Harga dan jadwal dikonfirmasi sebelum pembayaran.</p>
             </div>
             <div class="services-grid">
-                <div class="service-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="service-icon">
-                        <i class="bi bi-droplet"></i>
-                    </div>
-                    <h3>Ganti Oli</h3>
-                    <p>Ganti oli dengan produk berkualitas tinggi untuk menjaga mesin tetap terlumasi dan awet</p>
-                </div>
-                <div class="service-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="service-icon">
-                        <i class="bi bi-gear-wide-connected"></i>
-                    </div>
-                    <h3>Tune Up</h3>
-                    <p>Servis tune up menyeluruh untuk mengembalikan performa mesin seperti baru</p>
-                </div>
-                <div class="service-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="service-icon">
-                        <i class="bi bi-disc"></i>
-                    </div>
-                    <h3>Servis Rem</h3>
-                    <p>Perbaikan dan penggantian kampas rem untuk keselamatan berkendara Anda</p>
-                </div>
-                <div class="service-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="service-icon">
-                        <i class="bi bi-circle"></i>
-                    </div>
-                    <h3>Ganti Ban</h3>
-                    <p>Tersedia berbagai merek ban berkualitas dengan harga kompetitif</p>
-                </div>
+                @forelse($services as $index => $service)
+                    <article class="service-card" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
+                        <div class="service-icon"><i class="bi bi-stars"></i></div>
+                        <small>{{ $service->category }}</small>
+                        <h3>{{ $service->name }}</h3>
+                        <p>{{ $service->description ?: 'Hubungi kami melalui permintaan layanan untuk detail.' }}</p>
+                        <strong>{{ (float) $service->harga > 0 ? $service->formatted_harga : 'Harga dikonfirmasi admin' }}</strong>
+                    </article>
+                @empty
+                    <p class="text-muted">Layanan akan segera tersedia.</p>
+                @endforelse
+            </div>
+            <div class="services-action">
+                <a href="{{ route('layanan') }}" class="btn-hero btn-primary-hero">Lihat semua layanan</a>
             </div>
         </div>
     </section>
@@ -175,50 +102,43 @@
             <div class="about-content">
                 <div class="about-image" data-aos="fade-right">
                     <div class="about-illustration">
-                        <i class="bi bi-motorcycle about-illustration-icon"></i>
+                        <i class="bi bi-shop about-illustration-icon"></i>
                     </div>
                 </div>
                 <div class="about-text" data-aos="fade-left">
                     <span class="section-tag">
                         <i class="bi bi-info-circle"></i> Tentang Kami
                     </span>
-                    <h2>Mengapa Memilih <span>Rumah Daun?</span></h2>
-                    <p>
-                        Rumah Daun Bengkel Otomotif telah berpengalaman lebih dari 10 tahun dalam melayani 
-                        kebutuhan perawatan dan perbaikan motor. Kami berkomitmen memberikan layanan terbaik 
-                        dengan teknisi profesional dan suku cadang berkualitas.
-                    </p>
-                    <p>
-                        Dengan lebih dari 5000 pelanggan puas, kami terus berinovasi untuk memberikan 
-                        pengalaman servis motor yang nyaman dan terpercaya.
-                    </p>
+                    <h2>Mengapa Memilih <span>UD Rumah Daun?</span></h2>
+                    <p>UD Rumah Daun menyediakan beberapa layanan untuk kebutuhan pribadi, keluarga, acara, dan angkutan.</p>
+                    <p>Pelanggan dapat menghubungi kami untuk menanyakan layanan yang dibutuhkan, memastikan jadwal serta ketersediaan, lalu menyepakati detail sebelum datang atau menggunakan layanan.</p>
                     <div class="about-features">
                         <div class="about-feature-item">
                             <i class="bi bi-check-circle-fill"></i>
                             <div>
-                                <strong>Garansi Servis</strong>
-                                <p class="about-feature-note">Setiap layanan bergaransi</p>
+                                <strong>Layanan Cepat</strong>
+                                <p class="about-feature-note">Responsif dan efisien</p>
                             </div>
                         </div>
                         <div class="about-feature-item">
                             <i class="bi bi-check-circle-fill"></i>
                             <div>
-                                <strong>Teknisi Bersertifikat</strong>
-                                <p class="about-feature-note">Tim profesional berpengalaman</p>
+                                <strong>Beragam Layanan</strong>
+                                <p class="about-feature-note">Untuk kebutuhan pribadi dan acara</p>
                             </div>
                         </div>
                         <div class="about-feature-item">
                             <i class="bi bi-check-circle-fill"></i>
                             <div>
                                 <strong>Harga Transparan</strong>
-                                <p class="about-feature-note">Tanpa biaya tersembunyi</p>
+                                <p class="about-feature-note">Jelas dan bersaing</p>
                             </div>
                         </div>
                         <div class="about-feature-item">
                             <i class="bi bi-check-circle-fill"></i>
                             <div>
-                                <strong>Pengerjaan Cepat</strong>
-                                <p class="about-feature-note">Tepat waktu dan berkualitas</p>
+                                <strong>Pelayanan Ramah</strong>
+                                <p class="about-feature-note">Mendengar kebutuhan pelanggan</p>
                             </div>
                         </div>
                     </div>
@@ -227,71 +147,47 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
+    <!-- Service Process Section -->
     <section class="testimonials">
         <div class="container">
             <div class="section-header" data-aos="fade-up">
                 <span class="section-tag testimonial-tag">
-                    <i class="bi bi-chat-quote"></i> Testimoni
+                    <i class="bi bi-arrow-left-right"></i> Alur Layanan
                 </span>
-                <h2>Apa Kata <span class="testimonial-highlight">Pelanggan Kami</span></h2>
-                <p>Kepercayaan pelanggan adalah prioritas utama kami</p>
+                <h2>Pesan Layanan <span class="testimonial-highlight">dengan Mudah</span></h2>
+                <p>Alur sederhana untuk memastikan layanan sesuai kebutuhan dan jadwal Anda.</p>
             </div>
             <div class="testimonials-grid">
                 <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="testimonial-rating">
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    <p class="testimonial-text">
-                        "Pelayanan sangat profesional dan cepat. Motor saya jadi lebih responsif setelah tune up di sini. Highly recommended!"
-                    </p>
+                    <div class="testimonial-rating"><i class="bi bi-1-circle-fill"></i></div>
+                    <p class="testimonial-text">Pilih jasa, kebutuhan otomotif, penyewaan, atau transportasi dari katalog layanan UD Rumah Daun.</p>
                     <div class="testimonial-author">
-                        <div class="testimonial-avatar">AS</div>
+                        <div class="testimonial-avatar"><i class="bi bi-ui-checks"></i></div>
                         <div class="testimonial-author-info">
-                            <h4>Andi Susanto</h4>
-                            <p>Pelanggan Setia</p>
+                            <h4>Pilih Layanan</h4>
+                            <p>Tentukan kebutuhan Anda</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="testimonial-rating">
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    <p class="testimonial-text">
-                        "Harga sangat kompetitif dengan kualitas layanan yang excellent. Teknisi ramah dan menjelaskan dengan detail kondisi motor saya."
-                    </p>
+                    <div class="testimonial-rating"><i class="bi bi-2-circle-fill"></i></div>
+                    <p class="testimonial-text">Masuk atau daftar akun pelanggan, lalu kirim permintaan dengan jadwal dan detail yang dibutuhkan.</p>
                     <div class="testimonial-author">
-                        <div class="testimonial-avatar">BW</div>
+                        <div class="testimonial-avatar"><i class="bi bi-whatsapp"></i></div>
                         <div class="testimonial-author-info">
-                            <h4>Budi Wijaya</h4>
-                            <p>Pelanggan Baru</p>
+                            <h4>Tunggu Konfirmasi</h4>
+                            <p>Admin mengecek jadwal dan ketersediaan</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="testimonial-rating">
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    <p class="testimonial-text">
-                        "Sudah 3 tahun servis di Rumah Daun dan tidak pernah kecewa. Selalu puas dengan hasilnya. Terima kasih!"
-                    </p>
+                    <div class="testimonial-rating"><i class="bi bi-3-circle-fill"></i></div>
+                    <p class="testimonial-text">Setelah admin menyetujui permintaan dan harga, kasir mencatat pembayaran dan pesanan siap diproses.</p>
                     <div class="testimonial-author">
-                        <div class="testimonial-avatar">CR</div>
+                        <div class="testimonial-avatar"><i class="bi bi-calendar-check"></i></div>
                         <div class="testimonial-author-info">
-                            <h4>Citra Rahayu</h4>
-                            <p>Pelanggan Setia</p>
+                            <h4>Selesaikan Pesanan</h4>
+                            <p>Ikuti jadwal yang disepakati</p>
                         </div>
                     </div>
                 </div>
@@ -306,15 +202,15 @@
                 <span class="section-tag">
                     <i class="bi bi-geo-alt-fill"></i> Lokasi Kami
                 </span>
-                <h2>Temukan <span>Rumah Daun</span></h2>
-                <p>Kunjungi bengkel kami untuk mendapatkan layanan servis motor terbaik.</p>
+                <h2>Temukan <span>UD Rumah Daun</span></h2>
+                <p>Kunjungi kami untuk kebutuhan produk, layanan, dan konsultasi yang cepat serta terpercaya.</p>
             </div>
             <div class="location-content">
                 <div class="location-info" data-aos="fade-right">
                     <div class="location-icon">
                         <i class="bi bi-pin-map-fill"></i>
                     </div>
-                    <h3>Rumah Daun Bengkel Otomotif</h3>
+                    <h3>UD Rumah Daun</h3>
                     <p class="location-address">
                         <i class="bi bi-geo-alt-fill"></i>
                         Desa Menia, Kecamatan Sabu Barat, Kabupaten Sabu Raijua, Nusa Tenggara Timur, Indonesia
@@ -332,7 +228,7 @@
                 <div class="location-map" data-aos="fade-left">
                     <iframe
                         src="https://www.google.com/maps?q=Desa+Menia%2C+Kecamatan+Sabu+Barat%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur%2C+Indonesia&output=embed"
-                        title="Peta lokasi Rumah Daun Bengkel Otomotif"
+                        title="Peta lokasi UD Rumah Daun"
                         loading="lazy"
                         referrerpolicy="no-referrer-when-downgrade"
                         allowfullscreen></iframe>
@@ -345,9 +241,9 @@
     <section class="cta">
         <div class="container">
             <div data-aos="zoom-in">
-                <h2>Siap Untuk Servis Motor Anda?</h2>
-                <p>Jadwalkan servis motor Anda sekarang dan dapatkan pelayanan terbaik dari teknisi berpengalaman kami. Garansi servis dan harga kompetitif!</p>
-                <a href="https://wa.me/6282124626248" class="btn-cta" target="_blank">
+                <h2>Siap Untuk Kebutuhan Anda?</h2>
+                <p>Hubungi UD Rumah Daun untuk kebutuhan jasa, produk, dan konsultasi yang cepat, aman, dan sesuai kebutuhan Anda.</p>
+                <a href="https://wa.me/6285165021473" class="btn-cta" target="_blank">
                     <i class="bi bi-whatsapp"></i>
                     Hubungi Kami Sekarang
                 </a>
@@ -360,22 +256,21 @@
         <div class="container">
             <div class="footer-content" data-aos="fade-up">
                 <div class="footer-logo">
-                    <img src="{{ asset('images/logo-rumah-daun.png') }}" alt="Rumah Daun Bengkel Otomotif">
+                    <img src="{{ $siteLogoUrl }}" alt="UD Rumah Daun">
                 </div>
-                <h3>RUMAH DAUN BENGKEL OTOMOTIF</h3>
-                <p>Solusi terbaik untuk perawatan dan perbaikan motor Anda</p>
+                <h3>UD RUMAH DAUN</h3>
+                <p>Jasa & Produk Umum untuk kebutuhan rumah, usaha, dan harian Anda</p>
                 <div class="social-links">
-                    <a href="#" title="Facebook"><i class="bi bi-facebook"></i></a>
-                    <a href="#" title="Instagram"><i class="bi bi-instagram"></i></a>
-                    <a href="https://wa.me/6282124626248" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
-                    <a href="#" title="YouTube"><i class="bi bi-youtube"></i></a>
+                    <a href="https://www.facebook.com/udrumahdaun" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="https://www.instagram.com/ud.r.daun" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="https://wa.me/6285165021473" target="_blank" rel="noopener noreferrer" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                 </div>
                 <div class="footer-bottom">
-                    <p>&copy; {{ date('Y') }} Rumah Daun Bengkel Otomotif. All rights reserved.</p>
+                    <p>&copy; {{ date('Y') }} UD Rumah Daun. Dikelola dengan semangat pelayanan dan kepercayaan pelanggan.</p>
                     <p class="contact-note">
-                        <i class="bi bi-geo-alt me-2"></i>Desa Menia, Kecamatan Sabu Barat, Sabu Raijua
+                        <i class="bi bi-geo-alt me-2"></i>Jl. Trans Seba-Bolou, Menia, Kec. Sabu Bar., Kabupaten Sabu Raijua, Nusa Tenggara Tim. 85391, Indonesia
                         <span class="mx-3">|</span>
-                        <i class="bi bi-telephone me-2"></i>0821-2462-6248
+                        <i class="bi bi-telephone me-2"></i>+62 851-6502-1473
                     </p>
                 </div>
             </div>

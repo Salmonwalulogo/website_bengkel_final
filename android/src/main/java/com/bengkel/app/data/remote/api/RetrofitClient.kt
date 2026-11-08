@@ -1,5 +1,6 @@
 package com.bengkel.app.data.remote.api
 
+import com.bengkel.app.BuildConfig
 import com.bengkel.app.data.local.SessionManager
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -23,8 +24,10 @@ class RetrofitClient(private val sessionManager: SessionManager) {
     }
 
     private fun createApiService(baseUrl: String): ApiService {
-        require(baseUrl.startsWith("https://", ignoreCase = true)) {
-            "Alamat API harus menggunakan HTTPS sebelum autentikasi dapat digunakan."
+        val isHttps = baseUrl.startsWith("https://", ignoreCase = true)
+        val isDebugHttp = BuildConfig.DEBUG && baseUrl.startsWith("http://", ignoreCase = true)
+        require(isHttps || isDebugHttp) {
+            "Alamat API wajib HTTPS. HTTP hanya diizinkan pada APK debug."
         }
 
         val okHttpClient = OkHttpClient.Builder()
@@ -38,7 +41,7 @@ class RetrofitClient(private val sessionManager: SessionManager) {
                 sessionManager.getAuthToken()
                     ?.takeIf { it.isNotBlank() }
                     ?.let { token ->
-                        requestBuilder.header("Authorization", "Bearer $token")
+                        requestBuilder.header("Authorization", "Bearer " + token)
                     }
 
                 chain.proceed(requestBuilder.build())

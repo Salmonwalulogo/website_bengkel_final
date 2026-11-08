@@ -20,7 +20,7 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="category_id" class="form-label">Kategori <span class="text-danger">*</span></label>
+                        <label for="category_id" class="form-label">Kategori Produk <span class="text-danger">*</span></label>
                         <select class="form-select @error('category_id') is-invalid @enderror" 
                                 id="category_id" 
                                 name="category_id" 
@@ -105,6 +105,18 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="visibility" class="form-label">Tampilkan di katalog</label>
+                    <select id="visibility" name="visibility" class="form-select @error('visibility') is-invalid @enderror" required>
+                        <option value="both" {{ old('visibility', $product->visibility) === 'both' ? 'selected' : '' }}>Publik dan Customer</option>
+                        <option value="public" {{ old('visibility', $product->visibility) === 'public' ? 'selected' : '' }}>Publik saja</option>
+                        <option value="customer" {{ old('visibility', $product->visibility) === 'customer' ? 'selected' : '' }}>Customer saja</option>
+                    </select>
+                    @error('visibility')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="mb-3">

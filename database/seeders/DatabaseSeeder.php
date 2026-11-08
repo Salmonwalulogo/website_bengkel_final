@@ -27,18 +27,6 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
         ]);
 
-        User::updateOrCreate(['email' => 'admin@rumahdaun.test'], [
-            'name' => 'Administrator Rumah Daun',
-            'username' => 'admin',
-            'role' => 'admin',
-            'password' => Hash::make('Admin12345!'),
-        ]);
-
-        User::updateOrCreate(['email' => 'kasir@rumahdaun.test'], [
-            'name' => 'Kasir Rumah Daun',
-            'username' => 'kasir',
-            'role' => 'kasir',
-            'password' => Hash::make('Kasir12345!'),
-        ]);
+        $this->call(ServiceCatalogSeeder::class);
     }
 }

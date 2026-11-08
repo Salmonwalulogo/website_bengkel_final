@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
     use HasFactory;
+
+    public const VISIBILITY_PUBLIC = 'public';
+    public const VISIBILITY_CUSTOMER = 'customer';
+    public const VISIBILITY_BOTH = 'both';
 
     protected $fillable = [
         'category_id',
@@ -20,6 +25,7 @@ class Product extends Model
         'foto',
         'status',
         'is_active',
+        'visibility',
     ];
 
     protected $casts = [
@@ -43,6 +49,26 @@ class Product extends Model
     public function isActive()
     {
         return $this->status === 'active' && $this->is_active;
+    }
+
+    public function scopeForPublicCatalog(Builder $query): Builder
+    {
+        return $query->whereIn('visibility', [self::VISIBILITY_PUBLIC, self::VISIBILITY_BOTH]);
+    }
+
+    public function scopeForCustomerCatalog(Builder $query): Builder
+    {
+        return $query->whereIn('visibility', [self::VISIBILITY_CUSTOMER, self::VISIBILITY_BOTH]);
+    }
+
+    public function isVisibleToPublic(): bool
+    {
+        return in_array($this->visibility, [self::VISIBILITY_PUBLIC, self::VISIBILITY_BOTH], true);
+    }
+
+    public function isVisibleToCustomers(): bool
+    {
+        return in_array($this->visibility, [self::VISIBILITY_CUSTOMER, self::VISIBILITY_BOTH], true);
     }
 
     // Helper: format harga

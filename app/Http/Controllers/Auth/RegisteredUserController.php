@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -40,7 +38,7 @@ class RegisteredUserController extends Controller
             $username = $usernameBase . $suffix++;
         }
 
-        $user = User::create([
+        User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'username' => $username,
@@ -50,10 +48,7 @@ class RegisteredUserController extends Controller
             'role' => 'customer',
         ]);
 
-        // Login user yang baru dibuat
-        Auth::login($user);
-
-        // Redirect ke dashboard sesuai role
-        return redirect()->route('dashboard');
+        return redirect()->route('login')
+            ->with('status', 'Akun berhasil dibuat. Silakan masuk dengan akun baru Anda.');
     }
 }

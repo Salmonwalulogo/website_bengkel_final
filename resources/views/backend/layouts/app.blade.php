@@ -13,8 +13,9 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite('resources/css/backend/premium.css')
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased backend-page">
         <div class="min-h-screen bg-gray-100">
             @include('backend.layouts.navigation')
 

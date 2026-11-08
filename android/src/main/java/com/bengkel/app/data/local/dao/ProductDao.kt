@@ -28,6 +28,15 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE id = :id LIMIT 1")
     suspend fun getProductById(id: Long): ProductEntity?
 
+    @Query("DELETE FROM products WHERE id = :id")
+    suspend fun deleteProductById(id: Long)
+
+    @Query("UPDATE products SET categoryId = :newCategoryId WHERE categoryId = :oldCategoryId")
+    suspend fun replaceCategoryId(oldCategoryId: Long, newCategoryId: Long)
+
+    @Query("SELECT COUNT(*) FROM products WHERE categoryId = :categoryId AND status = 'active'")
+    suspend fun countActiveProductsInCategory(categoryId: Long): Int
+
     @Query("UPDATE products SET stok = stok - :quantity WHERE id = :productId")
     suspend fun decrementStock(productId: Long, quantity: Int)
 }

@@ -15,6 +15,8 @@ class Booking extends Model
         'service_id',
         'booking_date',
         'booking_time',
+        'request_details',
+        'quoted_price',
         'complaint',
         'status',
         'notes',
@@ -48,6 +50,11 @@ class Booking extends Model
     public function serviceDetails()
     {
         return $this->hasMany(ServiceDetail::class, 'booking_id');
+    }
+
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class, 'booking_id');
     }
 
     // ============ HELPER ============

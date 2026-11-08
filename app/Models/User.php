@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class, 'user_id');
     }
 
+    public function customerTransactions()
+    {
+        return $this->hasMany(Transaction::class, 'customer_id');
+    }
+
     // Notifikasi user
     public function notifications()
     {
@@ -77,5 +82,14 @@ class User extends Authenticatable
     public function isKasir()
     {
         return $this->role === 'kasir';
+    }
+
+    public function hasBusinessHistory(): bool
+    {
+        return $this->transactions()->exists()
+            || $this->customerTransactions()->exists()
+            || $this->bookings()->exists()
+            || $this->vehicles()->exists()
+            || $this->auditLogs()->exists();
     }
 }

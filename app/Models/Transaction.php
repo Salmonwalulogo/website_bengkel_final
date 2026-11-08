@@ -13,6 +13,7 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'customer_id',
+        'booking_id',
         'invoice_number',
         'checkout_token',
         'subtotal',
@@ -45,12 +46,16 @@ class Transaction extends Model
             if (empty($transaction->invoice_number)) {
                 $transaction->invoice_number = 'TRX-' . now()->format('Ymd') . '-TMP-' . Str::uuid();
             }
+            if (empty($transaction->receipt_number)) {
+                $transaction->receipt_number = 'STR-' . now()->format('Ymd') . '-TMP-' . Str::uuid();
+            }
         });
 
         static::created(function ($transaction) {
-            $transaction->updateQuietly([
+            $transaction->forceFill([
                 'invoice_number' => 'TRX-' . $transaction->created_at->format('Ymd') . '-' . str_pad((string) $transaction->id, 6, '0', STR_PAD_LEFT),
-            ]);
+                'receipt_number' => 'STR-' . $transaction->created_at->format('Ymd') . '-' . str_pad((string) $transaction->id, 6, '0', STR_PAD_LEFT),
+            ])->saveQuietly();
         });
     }
 
@@ -59,7 +64,15 @@ class Transaction extends Model
         $prefix = 'TRX-' . now()->format('Ymd') . '-';
         $lastNumber = (int) static::max('id');
 
-        return $prefix . str_pad((string) ($lastNumber + 1), 3, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) ($lastNumber + 1), 6, '0', STR_PAD_LEFT);
+    }
+
+    public static function nextReceiptNumber(): string
+    {
+        $prefix = 'STR-' . now()->format('Ymd') . '-';
+        $lastNumber = (int) static::max('id');
+
+        return $prefix . str_pad((string) ($lastNumber + 1), 6, '0', STR_PAD_LEFT);
     }
 
     // ============ RELASI ============
@@ -85,6 +98,11 @@ class Transaction extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class, 'transaction_id');
+    }
+
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class, 'booking_id');
     }
 
     // ============ HELPER ============

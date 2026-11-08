@@ -48,6 +48,35 @@ class BookingControllerTest extends TestCase
         $listResponse->assertOk()->assertJsonCount(1, 'data');
     }
 
+    public function test_customer_can_create_a_general_service_request_without_a_vehicle(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $service = Service::create([
+            'name' => 'Sewa Tenda',
+            'category' => 'Penyewaan',
+            'harga' => 0,
+            'status' => 'active',
+        ]);
+        $token = $customer->createToken('test')->plainTextToken;
+
+        $response = $this->withToken($token)->postJson('/api/bookings', [
+            'service_id' => $service->id,
+            'booking_date' => now()->addDay()->toDateString(),
+            'booking_time' => '10:00',
+            'request_details' => 'Tenda untuk acara keluarga',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.vehicle_id', null)
+            ->assertJsonPath('data.request_details', 'Tenda untuk acara keluarga')
+            ->assertJsonPath('data.status', 'pending');
+        $this->assertDatabaseHas('bookings', [
+            'user_id' => $customer->id,
+            'vehicle_id' => null,
+            'service_id' => $service->id,
+        ]);
+    }
+
     public function test_admin_or_cashier_can_update_booking_status(): void
     {
         $customer = User::factory()->create(['role' => 'customer']);

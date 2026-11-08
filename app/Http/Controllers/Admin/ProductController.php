@@ -20,7 +20,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
+        $categories = Category::query()->orderBy('name')->get();
         return view('backend.admin.products.create', compact('categories'));
     }
 
@@ -34,10 +34,11 @@ class ProductController extends Controller
             'stok' => 'required|integer|min:0',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'status' => 'required|in:active,inactive',
-            'is_active' => 'nullable|boolean',
+            'visibility' => 'sometimes|required|in:public,customer,both',
         ]);
 
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = $validated['status'] === 'active';
+        $validated['visibility'] ??= Product::VISIBILITY_PUBLIC;
 
         if ($request->hasFile('foto')) {
             $validated['foto'] = $request->file('foto')->store('products', 'public');
@@ -57,7 +58,7 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::all();
+        $categories = Category::query()->orderBy('name')->get();
         return view('backend.admin.products.edit', compact('product', 'categories'));
     }
 
@@ -71,10 +72,10 @@ class ProductController extends Controller
             'stok' => 'required|integer|min:0',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'status' => 'required|in:active,inactive',
-            'is_active' => 'nullable|boolean',
+            'visibility' => 'sometimes|required|in:public,customer,both',
         ]);
 
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = $validated['status'] === 'active';
 
         if ($request->hasFile('foto')) {
             if ($product->foto) {
@@ -91,12 +92,12 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->foto) {
-            Storage::disk('public')->delete($product->foto);
-        }
-        $product->delete();
+        $product->update([
+            'status' => 'inactive',
+            'is_active' => false,
+        ]);
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Produk berhasil dihapus.');
+            ->with('success', 'Produk dinonaktifkan. Riwayat penjualan dan data produk tetap tersimpan.');
     }
 }

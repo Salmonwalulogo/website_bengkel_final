@@ -19,6 +19,9 @@ interface SyncQueueDao {
     @Query("SELECT * FROM sync_queue WHERE status = 'pending' ORDER BY createdAt ASC")
     suspend fun getPendingSyncItems(): List<SyncQueueEntity>
 
+    @Query("SELECT * FROM sync_queue WHERE entityType = :entityType AND entityLocalId = :entityLocalId AND status = 'pending' ORDER BY createdAt ASC LIMIT 1")
+    suspend fun findPending(entityType: String, entityLocalId: String): SyncQueueEntity?
+
     @Query("SELECT COUNT(*) FROM sync_queue WHERE status = 'pending'")
     fun getPendingCountFlow(): Flow<Int>
 

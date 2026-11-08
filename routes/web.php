@@ -9,6 +9,7 @@ use App\Http\Controllers\Cashier\CashierDashboardController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ContactMessageController;
 use App\Models\Product;
+use App\Models\Service;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,20 +22,36 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     // Mengambil 8 produk terbaru untuk ditampilkan di homepage
     $products = Product::where('status', 'active')
+                       ->where('is_active', true)
+                       ->forPublicCatalog()
                        ->latest()
                        ->take(8)
                        ->get();
-    return view('frontend.home', compact('products'));
+    $services = Service::where('status', 'active')
+        ->orderBy('category')
+        ->orderBy('name')
+        ->take(6)
+        ->get();
+
+    return view('frontend.home', compact('products', 'services'));
 })->name('home');
 
 // Halaman Layanan
 Route::get('/layanan', function () {
-    return view('frontend.pages.layanan');
+    $services = Service::where('status', 'active')
+        ->orderBy('category')
+        ->orderBy('name')
+        ->get()
+        ->groupBy('category');
+
+    return view('frontend.pages.layanan', compact('services'));
 })->name('layanan');
 
 // Halaman Produk (Dengan Pagination)
 Route::get('/produk', function () {
     $products = Product::where('status', 'active')
+                       ->where('is_active', true)
+                       ->forPublicCatalog()
                        ->latest()
                        ->paginate(12);
     return view('frontend.pages.produk', compact('products'));
@@ -60,6 +77,10 @@ Route::post('/keranjang/checkout', [CartController::class, 'checkout'])
 Route::post('/keranjang/{product}', [CartController::class, 'add'])->name('cart.add');
 Route::patch('/keranjang/{product}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/keranjang/{product}', [CartController::class, 'remove'])->name('cart.remove');
+Route::middleware(['auth', 'role:customer'])->group(function () {
+    Route::get('/produk/{product}/beli-sekarang', [CartController::class, 'buyNow'])->name('cart.buy-now');
+    Route::post('/produk/{product}/beli-sekarang', [CartController::class, 'checkoutNow'])->name('cart.buy-now.checkout');
+});
 
 
 /*
@@ -73,11 +94,13 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard redirect berdasarkan role user
     Route::get('/dashboard', function () {
         $user = auth()->user();
-        return match($user->role) {
+        $role = $user?->role ?? 'customer';
+
+        return match ($role) {
             'admin'    => redirect()->route('admin.dashboard'),
             'kasir'    => redirect()->route('kasir.dashboard'),
             'customer' => redirect()->route('customer.dashboard'),
-            default    => redirect()->route('login'),
+            default    => redirect()->route('customer.dashboard'),
         };
     })->name('dashboard');
 
@@ -103,13 +126,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Resource CRUD
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)->except('show');
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
-    Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except('show');
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('vehicles', \App\Http\Controllers\Admin\VehicleController::class)->except('show');
     Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class)->except('show');
     Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
-    Route::resource('transactions', \App\Http\Controllers\Admin\TransactionController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+    Route::resource('transactions', \App\Http\Controllers\Admin\TransactionController::class)->only(['index', 'create', 'store', 'show']);
     Route::patch('/transactions/{transaction}/status', [\App\Http\Controllers\Admin\TransactionController::class, 'updateStatus'])->name('transactions.updateStatus');
-    Route::resource('payments', \App\Http\Controllers\Admin\PaymentController::class)->except('show');
+    Route::resource('payments', \App\Http\Controllers\Admin\PaymentController::class)->except(['show', 'destroy']);
     Route::resource('notifications', \App\Http\Controllers\Admin\NotificationController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::resource('contact-messages', \App\Http\Controllers\Admin\ContactMessageController::class)
         ->only(['index', 'show', 'destroy']);
@@ -145,12 +168,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 */
 Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer.')->group(function () {
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/produk', [CustomerDashboardController::class, 'products'])->name('products');
     Route::get('/kendaraan', [CustomerDashboardController::class, 'vehicles'])->name('vehicles');
     Route::post('/kendaraan', [CustomerDashboardController::class, 'storeVehicle'])->name('vehicles.store');
     Route::delete('/kendaraan/{vehicle}', [CustomerDashboardController::class, 'destroyVehicle'])->name('vehicles.destroy');
     Route::get('/booking', [CustomerDashboardController::class, 'createBooking'])->name('booking.create');
     Route::post('/booking', [CustomerDashboardController::class, 'storeBooking'])->name('booking.store');
     Route::get('/pesanan', [CustomerDashboardController::class, 'bookings'])->name('bookings');
+    Route::patch('/pesanan/{booking}/batal', [CustomerDashboardController::class, 'cancelBooking'])->name('bookings.cancel');
     Route::get('/transaksi', [CustomerDashboardController::class, 'transactions'])->name('transactions');
     Route::get('/notifikasi', [CustomerDashboardController::class, 'notifications'])->name('notifications');
     Route::post('/notifikasi/{notification}/read', [CustomerDashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
@@ -165,10 +190,13 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer
 Route::middleware(['auth', 'role:kasir'])->prefix('kasir')->name('kasir.')->group(function () {
     Route::get('/dashboard', [CashierDashboardController::class, 'index'])->name('dashboard');
     Route::get('/pesanan', [CashierDashboardController::class, 'orders'])->name('orders');
+    Route::post('/pesanan/{booking}/pembayaran', [CashierDashboardController::class, 'payServiceBooking'])->name('orders.pay');
     Route::get('/pembayaran', [CashierDashboardController::class, 'payments'])->name('payments');
     Route::get('/invoice', [CashierDashboardController::class, 'invoices'])->name('invoices');
     Route::get('/transaksi', [CashierDashboardController::class, 'pos'])->name('pos');
+    Route::get('/transaksi/produk', [CashierDashboardController::class, 'productCatalog'])->name('pos.products');
     Route::post('/transaksi', [CashierDashboardController::class, 'storeTransaction'])->name('pos.store');
+    Route::post('/transaksi/{transaction}/cetak', [CashierDashboardController::class, 'printReceipt'])->name('pos.print');
 });
 
 

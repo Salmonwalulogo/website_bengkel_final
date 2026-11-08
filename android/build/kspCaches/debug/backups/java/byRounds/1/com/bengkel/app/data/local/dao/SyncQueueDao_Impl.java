@@ -3,6 +3,7 @@ package com.bengkel.app.data.local.dao;
 import android.database.Cursor;
 import android.os.CancellationSignal;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.CoroutinesRoom;
 import androidx.room.EntityDeletionOrUpdateAdapter;
 import androidx.room.EntityInsertionAdapter;
@@ -16,6 +17,7 @@ import com.bengkel.app.data.local.entity.SyncQueueEntity;
 import java.lang.Class;
 import java.lang.Exception;
 import java.lang.Integer;
+import java.lang.Long;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -48,7 +50,7 @@ public final class SyncQueueDao_Impl implements SyncQueueDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `sync_queue` (`id`,`entityType`,`action`,`entityLocalId`,`payloadJson`,`status`,`attempts`,`errorMessage`,`createdAt`) VALUES (nullif(?, 0),?,?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `sync_queue` (`id`,`entityType`,`action`,`entityLocalId`,`payloadJson`,`status`,`attempts`,`errorMessage`,`createdAt`,`ownerUserId`) VALUES (nullif(?, 0),?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -67,13 +69,18 @@ public final class SyncQueueDao_Impl implements SyncQueueDao {
           statement.bindString(8, entity.getErrorMessage());
         }
         statement.bindLong(9, entity.getCreatedAt());
+        if (entity.getOwnerUserId() == null) {
+          statement.bindNull(10);
+        } else {
+          statement.bindLong(10, entity.getOwnerUserId());
+        }
       }
     };
     this.__updateAdapterOfSyncQueueEntity = new EntityDeletionOrUpdateAdapter<SyncQueueEntity>(__db) {
       @Override
       @NonNull
       protected String createQuery() {
-        return "UPDATE OR ABORT `sync_queue` SET `id` = ?,`entityType` = ?,`action` = ?,`entityLocalId` = ?,`payloadJson` = ?,`status` = ?,`attempts` = ?,`errorMessage` = ?,`createdAt` = ? WHERE `id` = ?";
+        return "UPDATE OR ABORT `sync_queue` SET `id` = ?,`entityType` = ?,`action` = ?,`entityLocalId` = ?,`payloadJson` = ?,`status` = ?,`attempts` = ?,`errorMessage` = ?,`createdAt` = ?,`ownerUserId` = ? WHERE `id` = ?";
       }
 
       @Override
@@ -92,7 +99,12 @@ public final class SyncQueueDao_Impl implements SyncQueueDao {
           statement.bindString(8, entity.getErrorMessage());
         }
         statement.bindLong(9, entity.getCreatedAt());
-        statement.bindLong(10, entity.getId());
+        if (entity.getOwnerUserId() == null) {
+          statement.bindNull(10);
+        } else {
+          statement.bindLong(10, entity.getOwnerUserId());
+        }
+        statement.bindLong(11, entity.getId());
       }
     };
     this.__preparedStmtOfDeleteById = new SharedSQLiteStatement(__db) {
@@ -219,6 +231,7 @@ public final class SyncQueueDao_Impl implements SyncQueueDao {
           final int _cursorIndexOfAttempts = CursorUtil.getColumnIndexOrThrow(_cursor, "attempts");
           final int _cursorIndexOfErrorMessage = CursorUtil.getColumnIndexOrThrow(_cursor, "errorMessage");
           final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
+          final int _cursorIndexOfOwnerUserId = CursorUtil.getColumnIndexOrThrow(_cursor, "ownerUserId");
           final List<SyncQueueEntity> _result = new ArrayList<SyncQueueEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final SyncQueueEntity _item;
@@ -244,8 +257,83 @@ public final class SyncQueueDao_Impl implements SyncQueueDao {
             }
             final long _tmpCreatedAt;
             _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
-            _item = new SyncQueueEntity(_tmpId,_tmpEntityType,_tmpAction,_tmpEntityLocalId,_tmpPayloadJson,_tmpStatus,_tmpAttempts,_tmpErrorMessage,_tmpCreatedAt);
+            final Long _tmpOwnerUserId;
+            if (_cursor.isNull(_cursorIndexOfOwnerUserId)) {
+              _tmpOwnerUserId = null;
+            } else {
+              _tmpOwnerUserId = _cursor.getLong(_cursorIndexOfOwnerUserId);
+            }
+            _item = new SyncQueueEntity(_tmpId,_tmpEntityType,_tmpAction,_tmpEntityLocalId,_tmpPayloadJson,_tmpStatus,_tmpAttempts,_tmpErrorMessage,_tmpCreatedAt,_tmpOwnerUserId);
             _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object findPending(final String entityType, final String entityLocalId,
+      final Continuation<? super SyncQueueEntity> $completion) {
+    final String _sql = "SELECT * FROM sync_queue WHERE entityType = ? AND entityLocalId = ? AND status = 'pending' ORDER BY createdAt ASC LIMIT 1";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 2);
+    int _argIndex = 1;
+    _statement.bindString(_argIndex, entityType);
+    _argIndex = 2;
+    _statement.bindString(_argIndex, entityLocalId);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<SyncQueueEntity>() {
+      @Override
+      @Nullable
+      public SyncQueueEntity call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfEntityType = CursorUtil.getColumnIndexOrThrow(_cursor, "entityType");
+          final int _cursorIndexOfAction = CursorUtil.getColumnIndexOrThrow(_cursor, "action");
+          final int _cursorIndexOfEntityLocalId = CursorUtil.getColumnIndexOrThrow(_cursor, "entityLocalId");
+          final int _cursorIndexOfPayloadJson = CursorUtil.getColumnIndexOrThrow(_cursor, "payloadJson");
+          final int _cursorIndexOfStatus = CursorUtil.getColumnIndexOrThrow(_cursor, "status");
+          final int _cursorIndexOfAttempts = CursorUtil.getColumnIndexOrThrow(_cursor, "attempts");
+          final int _cursorIndexOfErrorMessage = CursorUtil.getColumnIndexOrThrow(_cursor, "errorMessage");
+          final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
+          final int _cursorIndexOfOwnerUserId = CursorUtil.getColumnIndexOrThrow(_cursor, "ownerUserId");
+          final SyncQueueEntity _result;
+          if (_cursor.moveToFirst()) {
+            final long _tmpId;
+            _tmpId = _cursor.getLong(_cursorIndexOfId);
+            final String _tmpEntityType;
+            _tmpEntityType = _cursor.getString(_cursorIndexOfEntityType);
+            final String _tmpAction;
+            _tmpAction = _cursor.getString(_cursorIndexOfAction);
+            final String _tmpEntityLocalId;
+            _tmpEntityLocalId = _cursor.getString(_cursorIndexOfEntityLocalId);
+            final String _tmpPayloadJson;
+            _tmpPayloadJson = _cursor.getString(_cursorIndexOfPayloadJson);
+            final String _tmpStatus;
+            _tmpStatus = _cursor.getString(_cursorIndexOfStatus);
+            final int _tmpAttempts;
+            _tmpAttempts = _cursor.getInt(_cursorIndexOfAttempts);
+            final String _tmpErrorMessage;
+            if (_cursor.isNull(_cursorIndexOfErrorMessage)) {
+              _tmpErrorMessage = null;
+            } else {
+              _tmpErrorMessage = _cursor.getString(_cursorIndexOfErrorMessage);
+            }
+            final long _tmpCreatedAt;
+            _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
+            final Long _tmpOwnerUserId;
+            if (_cursor.isNull(_cursorIndexOfOwnerUserId)) {
+              _tmpOwnerUserId = null;
+            } else {
+              _tmpOwnerUserId = _cursor.getLong(_cursorIndexOfOwnerUserId);
+            }
+            _result = new SyncQueueEntity(_tmpId,_tmpEntityType,_tmpAction,_tmpEntityLocalId,_tmpPayloadJson,_tmpStatus,_tmpAttempts,_tmpErrorMessage,_tmpCreatedAt,_tmpOwnerUserId);
+          } else {
+            _result = null;
           }
           return _result;
         } finally {

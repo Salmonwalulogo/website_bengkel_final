@@ -3,51 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kontak - Rumah Daun Bengkel Otomotif</title>
+    <title>Kontak - UD Rumah Daun</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     @vite('resources/css/frontend/frontend.css')
     @vite('resources/css/frontend/kontak.css')
+    @vite('resources/css/frontend/navigation.css')
     @vite('resources/js/frontend.js')
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <a href="{{ route('home') }}" class="navbar-brand d-flex align-items-center gap-3">
-                <img src="{{ asset('images/logo-rumah-daun.png') }}" alt="Logo">
-                <div>
-                    <div class="contact-brand-title">RUMAH DAUN</div>
-                    <div class="contact-brand-subtitle">BENGKEL OTOMOTIF</div>
-                </div>
-            </a>
-            <button class="nav-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="nav-links">
-                <a href="{{ route('home') }}">Beranda</a>
-                <a href="{{ route('layanan') }}">Layanan</a>
-                <a href="{{ route('produk') }}">Produk</a>
-                <a href="{{ route('tentang') }}">Tentang</a>
-                <a href="{{ route('kontak') }}" class="active">Kontak</a>
-                @auth
-                    <a href="{{ url('/dashboard') }}" class="btn btn-sm btn-outline-light ms-3">Dashboard</a>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light ms-3">Login</a>
-                @endauth
-            </div>
-        </div>
-    </nav>
+<body data-user-role="{{ auth()->user()?->role ?? 'guest' }}" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+    @include('frontend.partials.navigation')
 
-    <!-- Page Header -->
     <section class="page-header">
         <div class="container">
             <h1>Hubungi <span>Kami</span></h1>
-            <p class="lead">Kami siap melayani kebutuhan servis motor Anda</p>
+            <p class="lead">Kami siap membantu kebutuhan jasa, produk, dan konsultasi Anda</p>
         </div>
     </section>
 
-    <!-- Contact Section -->
     <section class="contact-section">
         <div class="container">
             <div class="row">
@@ -68,16 +41,25 @@
                             </div>
                             <div>
                                 <h3>Telepon / WhatsApp</h3>
-                                <p>0821-2462-6248<br>Senin - Sabtu: 08:00 - 17:00</p>
+                                <p><a href="https://wa.me/6285165021473" target="_blank" rel="noopener noreferrer">+62 851-6502-1473</a><br>Senin - Sabtu: 08:00 - 17:00</p>
                             </div>
                         </div>
                         <div class="contact-item">
                             <div class="contact-icon">
-                                <i class="bi bi-envelope-fill"></i>
+                                <i class="bi bi-instagram"></i>
                             </div>
                             <div>
-                                <h3>Email</h3>
-                                <p>info@rumahdaun.com<br>support@rumahdaun.com</p>
+                                <h3>Instagram</h3>
+                                <p><a href="https://www.instagram.com/ud.r.daun" target="_blank" rel="noopener noreferrer">@ud.r.daun</a></p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="bi bi-facebook"></i>
+                            </div>
+                            <div>
+                                <h3>Facebook</h3>
+                                <p><a href="https://www.facebook.com/udrumahdaun" target="_blank" rel="noopener noreferrer">Fb Ud R Daun</a></p>
                             </div>
                         </div>
                         <div class="contact-item">
@@ -93,9 +75,7 @@
                 </div>
                 <div class="col-lg-7">
                     <div class="contact-form">
-                        <h2 class="contact-form-title">
-                            Kirim Pesan
-                        </h2>
+                        <h2 class="contact-form-title">Kirim Pesan</h2>
                         @if (session('success'))
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
@@ -142,10 +122,9 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="contact-footer">
         <div class="container">
-            <p>&copy; {{ date('Y') }} Rumah Daun Bengkel Otomotif. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} UD Rumah Daun. Hubungi kami untuk kebutuhan jasa, produk, dan konsultasi.</p>
         </div>
     </footer>
 

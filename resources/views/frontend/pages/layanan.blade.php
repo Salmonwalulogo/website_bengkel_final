@@ -3,117 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layanan - Rumah Daun Bengkel Otomotif</title>
+    <title>Layanan dan Pemesanan - UD Rumah Daun</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
+
     @vite('resources/css/frontend/frontend.css')
     @vite('resources/css/frontend/layanan.css')
+    @vite('resources/css/frontend/navigation.css')
     @vite('resources/js/frontend.js')
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <a href="{{ route('home') }}" class="navbar-brand d-flex align-items-center gap-3">
-                <img src="{{ asset('images/logo-rumah-daun.png') }}" alt="Logo">
-                <div>
-                    <div  class="page-style-1">RUMAH DAUN</div>
-                    <div  class="page-style-2">BENGKEL OTOMOTIF</div>
-                </div>
-            </a>
-            <button class="nav-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="nav-links">
-                <a href="{{ route('home') }}">Beranda</a>
-                <a href="{{ route('layanan') }}" class="active">Layanan</a>
-                <a href="{{ route('produk') }}">Produk</a>
-                <a href="{{ route('tentang') }}">Tentang</a>
-                <a href="{{ route('kontak') }}">Kontak</a>
-                @auth
-                    <a href="{{ url('/dashboard') }}" class="btn btn-sm btn-outline-light ms-3">Dashboard</a>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light ms-3">Login</a>
-                @endauth
-            </div>
-        </div>
-    </nav>
+<body data-user-role="{{ auth()->user()?->role ?? 'guest' }}" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+    @include('frontend.partials.navigation')
 
-    <!-- Page Header -->
     <section class="page-header">
         <div class="container">
-            <h1>Layanan <span>Kami</span></h1>
-            <p class="lead">Solusi lengkap untuk perawatan dan perbaikan motor Anda</p>
+            <h1>Jasa &amp; Layanan <span>Kami</span></h1>
+            <p class="lead">Pilih layanan, kirim permintaan, lalu tunggu konfirmasi ketersediaan dari tim UD Rumah Daun.</p>
         </div>
     </section>
 
-    <!-- Services Section -->
     <section class="services-section">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="bi bi-droplet"></i>
+            @forelse($services as $category => $items)
+                <h2 class="h4 mb-3">{{ $category }}</h2>
+                <div class="row mb-4">
+                    @foreach($items as $service)
+                        <div class="col-md-4 mb-3">
+                            <article class="service-card h-100">
+                                <div class="service-icon"><i class="bi bi-stars"></i></div>
+                                <h3>{{ $service->name }}</h3>
+                                <p>{{ $service->description ?: 'Layanan UD Rumah Daun. Isi kebutuhan Anda saat mengirim permintaan.' }}</p>
+                                <p class="fw-semibold mb-3">
+                                    @if((float) $service->harga > 0)
+                                        Rp {{ number_format($service->harga, 0, ',', '.') }}
+                                    @else
+                                        Harga dikonfirmasi setelah permintaan
+                                    @endif
+                                    @if($service->duration)
+                                        <small class="d-block text-muted fw-normal">{{ $service->duration }}</small>
+                                    @endif
+                                </p>
+                                @if(auth()->user()?->role === 'customer')
+                                    <a class="btn btn-success" href="{{ route('customer.booking.create', ['service' => $service->id]) }}">Pesan layanan</a>
+                                @elseif(auth()->guest())
+                                    <a class="btn btn-success" href="{{ route('customer.booking.create', ['service' => $service->id]) }}">Login untuk pesan</a>
+                                    <a class="btn btn-outline-success ms-1" href="{{ route('register') }}">Daftar</a>
+                                @else
+                                    <span class="text-muted small">Masuk dengan akun pelanggan untuk memesan.</span>
+                                @endif
+                            </article>
                         </div>
-                        <h3>Ganti Oli</h3>
-                        <p>Ganti oli dengan produk berkualitas tinggi untuk menjaga mesin tetap terlumasi dan awet. Tersedia berbagai merek oli ternama.</p>
-                    </div>
+                    @endforeach
                 </div>
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="bi bi-gear-wide-connected"></i>
-                        </div>
-                        <h3>Tune Up</h3>
-                        <p>Servis tune up menyeluruh untuk mengembalikan performa mesin seperti baru. Pemeriksaan sistem pengapian, bahan bakar, dan pendingin.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="bi bi-disc"></i>
-                        </div>
-                        <h3>Servis Rem</h3>
-                        <p>Perbaikan dan penggantian kampas rem untuk keselamatan berkendara Anda. Sistem rem diperiksa secara menyeluruh.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="bi bi-circle"></i>
-                        </div>
-                        <h3>Ganti Ban</h3>
-                        <p>Tersedia berbagai merek ban berkualitas dengan harga kompetitif. Pemasangan dilakukan dengan peralatan modern.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="bi bi-battery-charging"></i>
-                        </div>
-                        <h3>Servis Kelistrikan</h3>
-                        <p>Perbaikan sistem kelistrikan motor termasuk aki, lampu, dan komponen kelistrikan lainnya.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="bi bi-tools"></i>
-                        </div>
-                        <h3>Overhaul Mesin</h3>
-                        <p>Servis besar untuk mesin yang membutuhkan perbaikan menyeluruh. Ditangani oleh teknisi berpengalaman.</p>
-                    </div>
-                </div>
+            @empty
+                <div class="alert alert-info">Belum ada layanan yang aktif. Silakan hubungi admin.</div>
+            @endforelse
+            <div class="text-center mt-4">
+                <p>Pesanan layanan dikonfirmasi terlebih dahulu sebelum pembayaran.</p>
+                <a class="btn btn-warning" href="https://wa.me/6285165021473?text=Halo%20UD%20Rumah%20Daun%2C%20saya%20ingin%20bertanya%20tentang%20layanan." target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-whatsapp"></i> Tanya via WhatsApp
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
-            <p>&copy; {{ date('Y') }} Rumah Daun Bengkel Otomotif. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} UD Rumah Daun. Siap membantu kebutuhan Anda.</p>
         </div>
     </footer>
 

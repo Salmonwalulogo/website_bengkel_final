@@ -6,12 +6,29 @@ document.querySelectorAll(".nav-toggle").forEach((toggle) => {
         return;
     }
 
+    const closeDropdown = () => {
+        const dropdown = navbar.querySelector(".nav-dropdown");
+        const dropdownToggle = dropdown?.querySelector(".nav-dropdown-toggle");
+
+        dropdown?.classList.remove("open");
+        dropdownToggle?.setAttribute("aria-expanded", "false");
+    };
+
     const closeMenu = () => {
+        closeDropdown();
         links.classList.remove("open");
         toggle.setAttribute("aria-expanded", "false");
         toggle.setAttribute("aria-label", "Buka menu navigasi");
         toggle.querySelector("i")?.classList.replace("bi-x-lg", "bi-list");
     };
+
+    const dropdownToggle = navbar.querySelector(".nav-dropdown-toggle");
+    dropdownToggle?.addEventListener("click", () => {
+        const dropdown = dropdownToggle.closest(".nav-dropdown");
+        const isOpen = dropdown?.classList.toggle("open") ?? false;
+
+        dropdownToggle.setAttribute("aria-expanded", String(isOpen));
+    });
 
     toggle.addEventListener("click", () => {
         const isOpen = links.classList.toggle("open");
@@ -33,6 +50,12 @@ document.querySelectorAll(".nav-toggle").forEach((toggle) => {
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
             closeMenu();
+        }
+    });
+
+    document.addEventListener("click", (event) => {
+        if (event.target instanceof Node && !navbar.contains(event.target)) {
+            closeDropdown();
         }
     });
 });

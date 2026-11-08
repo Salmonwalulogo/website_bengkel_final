@@ -1,6 +1,6 @@
 @extends('backend.layouts.admin')
 
-@section('title', 'Edit Booking')
+@section('title', 'Edit Permintaan Layanan')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -34,12 +34,12 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="vehicle_id" class="form-label">Kendaraan <span class="text-danger">*</span></label>
-                        <select class="form-select @error('vehicle_id') is-invalid @enderror" id="vehicle_id" name="vehicle_id" required>
-                            <option value="">Pilih Kendaraan</option>
+                        <label for="vehicle_id" class="form-label">Kendaraan terkait (opsional)</label>
+                        <select class="form-select @error('vehicle_id') is-invalid @enderror" id="vehicle_id" name="vehicle_id">
+                            <option value="">Tidak terkait kendaraan</option>
                             @foreach($vehicles as $vehicle)
                                 <option value="{{ $vehicle->id }}" {{ old('vehicle_id', $booking->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
-                                    {{ $vehicle->plate_number }} - {{ $vehicle->brand }} {{ $vehicle->model }}
+                                    {{ $vehicle->plate_number }} - {{ $vehicle->brand }} {{ $vehicle->model }} ({{ $vehicle->user->name ?? 'Pelanggan' }})
                                 </option>
                             @endforeach
                         </select>
@@ -96,20 +96,27 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div class="mb-3">
+                        <label for="quoted_price" class="form-label">Harga konfirmasi (opsional)</label>
+                        <input type="number" min="0" step="0.01" class="form-control @error('quoted_price') is-invalid @enderror"
+                               id="quoted_price" name="quoted_price" value="{{ old('quoted_price', $booking->quoted_price) }}">
+                        <div class="form-text">Harga khusus pesanan ini. Kosongkan untuk memakai harga standar layanan.</div>
+                        @error('quoted_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
                 </div>
 
                 <div class="col-md-12">
                     <div class="mb-3">
-                        <label for="complaint" class="form-label">Keluhan Customer</label>
-                        <textarea class="form-control @error('complaint') is-invalid @enderror" 
-                                  id="complaint" name="complaint" rows="3">{{ old('complaint', $booking->complaint) }}</textarea>
-                        @error('complaint')
+                        <label for="request_details" class="form-label">Detail kebutuhan pelanggan</label>
+                        <textarea class="form-control @error('request_details') is-invalid @enderror"
+                                  id="request_details" name="request_details" rows="3">{{ old('request_details', $booking->request_details ?: $booking->complaint) }}</textarea>
+                        @error('request_details')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Catatan Admin/Kasir</label>
+                        <label for="notes" class="form-label">Catatan internal admin</label>
                         <textarea class="form-control @error('notes') is-invalid @enderror" 
                                   id="notes" name="notes" rows="3">{{ old('notes', $booking->notes) }}</textarea>
                         @error('notes')
@@ -124,7 +131,7 @@
                     <i class="fas fa-times me-2"></i>Batal
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Update Booking
+                    <i class="fas fa-save me-2"></i>                    Update Permintaan
                 </button>
             </div>
         </form>

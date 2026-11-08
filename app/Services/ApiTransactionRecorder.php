@@ -14,7 +14,17 @@ class ApiTransactionRecorder
 {
     public function record(User $cashier, array $data): Transaction
     {
-        return DB::transaction(function () use ($cashier, $data) {
+        return $this->recordOrder($cashier, $data, false);
+    }
+
+    public function recordCustomerOrder(User $customer, array $data): Transaction
+    {
+        return $this->recordOrder($customer, $data, true);
+    }
+
+    private function recordOrder(User $actor, array $data, bool $customerOrder): Transaction
+    {
+        return DB::transaction(function () use ($actor, $data, $customerOrder) {
             $itemsByProduct = collect($data['items'])
                 ->groupBy('product_id')
                 ->map(fn ($items, $productId) => [
@@ -63,15 +73,15 @@ class ApiTransactionRecorder
 
             $totalPayment = round($subtotal - $discount + $tax, 2);
             $paidAmount = round((float) $data['paid_amount'], 2);
-            if ($paidAmount < $totalPayment) {
+            if (! $customerOrder && $paidAmount < $totalPayment) {
                 throw ValidationException::withMessages([
                     'paid_amount' => 'Pembayaran kurang dari total transaksi yang dihitung server.',
                 ]);
             }
 
             $transaction = Transaction::create([
-                'user_id' => $cashier->id,
-                'customer_id' => $data['customer_id'] ?? null,
+                'user_id' => $actor->id,
+                'customer_id' => $customerOrder ? $actor->id : ($data['customer_id'] ?? null),
                 'checkout_token' => $data['client_uuid'] ?? null,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
@@ -79,7 +89,7 @@ class ApiTransactionRecorder
                 'total_payment' => $totalPayment,
                 'paid_amount' => $paidAmount,
                 'change_amount' => round($paidAmount - $totalPayment, 2),
-                'status' => 'completed',
+                'status' => $customerOrder ? 'pending' : 'completed',
                 'payment_method' => strtolower($data['payment_method']),
             ]);
 
@@ -104,9 +114,9 @@ class ApiTransactionRecorder
             Payment::create([
                 'transaction_id' => $transaction->id,
                 'payment_code' => 'PAY-' . strtoupper(bin2hex(random_bytes(4))),
-                'amount' => $paidAmount,
-                'payment_date' => now(),
-                'status' => 'paid',
+                'amount' => $customerOrder ? $totalPayment : $paidAmount,
+                'payment_date' => $customerOrder ? null : now(),
+                'status' => $customerOrder ? 'pending' : 'paid',
             ]);
 
             return $transaction;

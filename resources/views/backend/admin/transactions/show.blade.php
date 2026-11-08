@@ -24,7 +24,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <strong>Customer</strong>
-                        <p class="text-muted mb-0">{{ $transaction->user->name ?? '-' }}</p>
+                        <p class="text-muted mb-0">{{ $transaction->customer->name ?? $transaction->user->name ?? '-' }}</p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <strong>Total Pembayaran</strong>
@@ -52,9 +52,15 @@
 
         <div class="card">
             <div class="card-header">
-                <i class="fas fa-box me-2"></i>Detail Produk
+                <i class="fas fa-box me-2"></i>Detail Pesanan
             </div>
             <div class="card-body">
+                @if($transaction->booking?->service)
+                    <div class="alert alert-info mb-0">
+                        Layanan: <strong>{{ $transaction->booking->service->name }}</strong>
+                        <span class="d-block">Tanggal permintaan: {{ $transaction->booking->booking_date?->format('d/m/Y') }}</span>
+                    </div>
+                @else
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -81,6 +87,7 @@
                         </tbody>
                     </table>
                 </div>
+                @endif
             </div>
         </div>
     </div>

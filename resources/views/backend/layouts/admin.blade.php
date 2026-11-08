@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Admin Dashboard') - Web Bengkel</title>
+    <title>@yield('title', 'Admin Dashboard') - UD Rumah Daun</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -17,14 +17,15 @@
     
     @stack('styles')
     @vite('resources/css/backend/admin.css')
+    @vite('resources/css/backend/premium.css')
 </head>
-<body class="backend-page">
+<body class="backend-page" data-user-role="{{ auth()->user()->role }}" data-authenticated="true">
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-brand" onclick="window.location.href='{{ route('admin.dashboard') }}'">
-            <i class="fas fa-tools"></i>
-            ADMIN PANEL
-        </div>
+    <div class="sidebar" id="admin-sidebar">
+        <a href="{{ route('admin.dashboard') }}" class="sidebar-brand" aria-label="UD Rumah Daun - Dashboard Admin">
+            <img src="{{ $siteLogoUrl }}" alt="Logo UD Rumah Daun">
+            <span><strong>UD RUMAH DAUN</strong><small>ADMIN PANEL</small></span>
+        </a>
         <ul class="sidebar-nav">
             <!-- Dashboard -->
             <li class="nav-item">
@@ -33,10 +34,10 @@
                 </a>
             </li>
 
-            <!-- Master Data (Dropdown) -->
+            <!-- Data usaha -->
             <li class="nav-item">
-                <a href="#" class="nav-link dropdown-toggle" onclick="toggleSubmenu(event, 'submenu-master')">
-                    <i class="fas fa-database"></i> Master Data
+                <a href="#" class="nav-link dropdown-toggle" aria-expanded="false" aria-controls="submenu-master" onclick="toggleSubmenu(event, 'submenu-master')">
+                    <i class="fas fa-database"></i><span>Data Usaha</span>
                     <i class="fas fa-chevron-right arrow" id="arrow-master"></i>
                 </a>
                 <ul class="submenu" id="submenu-master">
@@ -63,17 +64,25 @@
                 </ul>
             </li>
 
-            <!-- Booking (Single) -->
+            <!-- Operasional -->
             <li class="nav-item">
-                <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
-                    <i class="fas fa-calendar-check"></i> Booking
+                <a href="#" class="nav-link dropdown-toggle" aria-expanded="false" aria-controls="submenu-operasional" onclick="toggleSubmenu(event, 'submenu-operasional')">
+                    <i class="fas fa-clipboard-check"></i><span>Operasional</span>
+                    <i class="fas fa-chevron-right arrow" id="arrow-operasional"></i>
                 </a>
+                <ul class="submenu" id="submenu-operasional">
+                    <li class="nav-item">
+                        <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
+                            <i class="fas fa-calendar-check"></i> Booking
+                        </a>
+                    </li>
+                </ul>
             </li>
 
-            <!-- Keuangan (Dropdown) -->
+            <!-- Keuangan -->
             <li class="nav-item">
-                <a href="#" class="nav-link dropdown-toggle" onclick="toggleSubmenu(event, 'submenu-keuangan')">
-                    <i class="fas fa-money-bill-wave"></i> Keuangan
+                <a href="#" class="nav-link dropdown-toggle" aria-expanded="false" aria-controls="submenu-keuangan" onclick="toggleSubmenu(event, 'submenu-keuangan')">
+                    <i class="fas fa-money-bill-wave"></i><span>Keuangan</span>
                     <i class="fas fa-chevron-right arrow" id="arrow-keuangan"></i>
                 </a>
                 <ul class="submenu" id="submenu-keuangan">
@@ -90,10 +99,10 @@
                 </ul>
             </li>
 
-            <!-- Manajemen (Dropdown) -->
+            <!-- Pengelolaan -->
             <li class="nav-item">
-                <a href="#" class="nav-link dropdown-toggle" onclick="toggleSubmenu(event, 'submenu-manajemen')">
-                    <i class="fas fa-cogs"></i> Manajemen
+                <a href="#" class="nav-link dropdown-toggle" aria-expanded="false" aria-controls="submenu-manajemen" onclick="toggleSubmenu(event, 'submenu-manajemen')">
+                    <i class="fas fa-cogs"></i><span>Pengelolaan</span>
                     <i class="fas fa-chevron-right arrow" id="arrow-manajemen"></i>
                 </a>
                 <ul class="submenu" id="submenu-manajemen">
@@ -112,53 +121,45 @@
                             <i class="fas fa-envelope"></i> Pesan Kontak
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                            <i class="fas fa-chart-bar"></i> Laporan
+                        </a>
+                    </li>
                 </ul>
             </li>
-            <!-- Pengaturan (Dropdown) -->
-<li class="nav-item">
-    <a href="#" class="nav-link dropdown-toggle" onclick="toggleSubmenu(event, 'submenu-pengaturan')">
-        <i class="fas fa-cog"></i> Pengaturan
-        <i class="fas fa-chevron-right arrow" id="arrow-pengaturan"></i>
-    </a>
-    <ul class="submenu" id="submenu-pengaturan">
-        <li class="nav-item">
-            <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                <i class="fas fa-id-card"></i> Profil & Keamanan
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.settings.profile') }}" class="nav-link {{ request()->routeIs('admin.settings.profile') ? 'active' : '' }}">
-                <i class="fas fa-user-circle"></i> Profil Saya
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.settings.account') }}" class="nav-link {{ request()->routeIs('admin.settings.account') ? 'active' : '' }}">
-                <i class="fas fa-key"></i> Akun & Keamanan
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.settings.general') }}" class="nav-link {{ request()->routeIs('admin.settings.general') ? 'active' : '' }}">
-                <i class="fas fa-store"></i> Pengaturan Bengkel
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.settings.notification') }}" class="nav-link {{ request()->routeIs('admin.settings.notification') ? 'active' : '' }}">
-                <i class="fas fa-bell"></i> Notifikasi
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.settings.backup') }}" class="nav-link {{ request()->routeIs('admin.settings.backup') ? 'active' : '' }}">
-                <i class="fas fa-database"></i> Backup & Restore
-            </a>
-        </li>
-    </ul>
-</li>
-
-            <!-- Laporan (Single) -->
             <li class="nav-item">
-                <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar"></i> Laporan
+                <a href="#" class="nav-link dropdown-toggle" aria-expanded="false" aria-controls="submenu-pengaturan" onclick="toggleSubmenu(event, 'submenu-pengaturan')">
+                    <i class="fas fa-cog"></i><span>Pengaturan</span>
+                    <i class="fas fa-chevron-right arrow" id="arrow-pengaturan"></i>
                 </a>
+                <ul class="submenu" id="submenu-pengaturan">
+                    <li class="nav-item">
+                        <a href="{{ route('admin.settings.profile') }}" class="nav-link {{ request()->routeIs('admin.settings.profile') ? 'active' : '' }}">
+                            <i class="fas fa-user-circle"></i> Profil Saya
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.settings.account') }}" class="nav-link {{ request()->routeIs('admin.settings.account') ? 'active' : '' }}">
+                            <i class="fas fa-key"></i> Akun & Keamanan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.settings.general') }}" class="nav-link {{ request()->routeIs('admin.settings.general') ? 'active' : '' }}">
+                            <i class="fas fa-image"></i> Identitas & Logo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.settings.notification') }}" class="nav-link {{ request()->routeIs('admin.settings.notification') ? 'active' : '' }}">
+                            <i class="fas fa-bell"></i> Notifikasi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.settings.backup') }}" class="nav-link {{ request()->routeIs('admin.settings.backup') ? 'active' : '' }}">
+                            <i class="fas fa-database"></i> Backup & Restore
+                        </a>
+                    </li>
+                </ul>
             </li>
 
             <!-- Logout -->
@@ -172,13 +173,13 @@
             </li>
         </ul>
     </div>
-    <div class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+    <button type="button" class="sidebar-backdrop" aria-label="Tutup menu admin" onclick="toggleSidebar(false)"></button>
 
     <!-- Content Wrapper -->
     <div class="content-wrapper">
         <!-- Topbar -->
         <div class="topbar">
-            <button type="button" class="mobile-menu-toggle" onclick="toggleSidebar()" aria-label="Buka menu">
+            <button type="button" class="mobile-menu-toggle" aria-label="Buka menu admin" aria-controls="admin-sidebar" aria-expanded="false" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
             <div class="d-flex align-items-center">
@@ -234,14 +235,25 @@
             event.preventDefault();
             const submenu = document.getElementById(submenuId);
             const arrow = document.getElementById('arrow-' + submenuId.replace('submenu-', ''));
-            
-            submenu.classList.toggle('show');
-            arrow.classList.toggle('rotated');
+            const toggle = document.querySelector('[aria-controls="' + submenuId + '"]');
+            const isOpen = submenu.classList.toggle('show');
+
+            if (arrow) arrow.classList.toggle('rotated', isOpen);
+            if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
         }
 
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
-            document.querySelector('.sidebar-backdrop').classList.toggle('show');
+        function toggleSidebar(open = null) {
+            const sidebar = document.getElementById('admin-sidebar');
+            const backdrop = document.querySelector('.sidebar-backdrop');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            const shouldOpen = open === null ? !sidebar.classList.contains('open') : open;
+
+            sidebar.classList.toggle('open', shouldOpen);
+            backdrop.classList.toggle('show', shouldOpen);
+            toggle.setAttribute('aria-expanded', String(shouldOpen));
+            toggle.setAttribute('aria-label', shouldOpen ? 'Tutup menu admin' : 'Buka menu admin');
+            toggle.querySelector('i').classList.toggle('fa-bars', !shouldOpen);
+            toggle.querySelector('i').classList.toggle('fa-times', shouldOpen);
         }
 
         // Auto-open submenu if active
@@ -256,8 +268,18 @@
                     if (arrow) {
                         arrow.classList.add('rotated');
                     }
+                    const toggle = document.querySelector('[aria-controls="' + submenu.id + '"]');
+                    if (toggle) toggle.setAttribute('aria-expanded', 'true');
                 }
             });
+
+            document.querySelectorAll('.sidebar a.nav-link:not(.dropdown-toggle)').forEach(link => {
+                link.addEventListener('click', () => toggleSidebar(false));
+            });
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') toggleSidebar(false);
         });
     </script>
     @stack('scripts')

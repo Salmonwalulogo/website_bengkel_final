@@ -28,6 +28,9 @@ interface BookingDao {
     @Query("SELECT * FROM bookings WHERE localId = :localId LIMIT 1")
     suspend fun getBookingByLocalId(localId: String): BookingEntity?
 
+    @Query("SELECT * FROM bookings WHERE serverId = :serverId LIMIT 1")
+    suspend fun getBookingByServerId(serverId: Long): BookingEntity?
+
     @Query("SELECT COUNT(*) FROM bookings")
     fun getBookingCountFlow(): Flow<Int>
 

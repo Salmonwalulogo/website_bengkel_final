@@ -4,6 +4,14 @@
         "source": "com.bengkel.app-main-64:/drawable/ic_launcher_background.xml"
     },
     {
+        "merged": "com.bengkel.app-debug-62:/drawable-nodpi_rumah_daun_logo.png.flat",
+        "source": "com.bengkel.app-main-64:/drawable-nodpi/rumah_daun_logo.png"
+    },
+    {
+        "merged": "com.bengkel.app-debug-62:/drawable-nodpi_ic_launcher.png.flat",
+        "source": "com.bengkel.app-main-64:/drawable-nodpi/ic_launcher.png"
+    },
+    {
         "merged": "com.bengkel.app-debug-62:/drawable_ic_launcher_foreground.xml.flat",
         "source": "com.bengkel.app-main-64:/drawable/ic_launcher_foreground.xml"
     }

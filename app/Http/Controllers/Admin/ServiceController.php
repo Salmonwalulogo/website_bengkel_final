@@ -23,9 +23,10 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
             'description' => 'nullable|string',
             'harga' => 'required|numeric|min:0',
-            'duration' => 'required|string|max:255',
+            'duration' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -43,9 +44,10 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
             'description' => 'nullable|string',
             'harga' => 'required|numeric|min:0',
-            'duration' => 'required|string|max:255',
+            'duration' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -56,6 +58,13 @@ class ServiceController extends Controller
 
     public function destroy(Service $service)
     {
+        if ($service->bookings()->exists()) {
+            $service->update(['status' => 'inactive']);
+
+            return redirect()->route('admin.services.index')
+                ->with('success', 'Layanan dinonaktifkan agar riwayat pesanan tetap tersimpan.');
+        }
+
         $service->delete();
         return redirect()->route('admin.services.index')->with('success', 'Layanan berhasil dihapus.');
     }

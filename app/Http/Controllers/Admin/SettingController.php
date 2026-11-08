@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
@@ -83,26 +84,26 @@ class SettingController extends Controller
     }
 
     /**
-     * Tampilkan halaman pengaturan bengkel
-     * PERBAIKAN: Menambahkan variabel $settings agar tidak error di view
+     * Tampilkan halaman pengaturan usaha dan identitas website.
      */
     public function general()
     {
-        // Nilai default untuk pengaturan bengkel
-        $settings = [
-            'nama_bengkel' => 'Bengkel Motor',
+        $settings = DB::table('settings')->pluck('value', 'key')->all();
+        $settings = array_merge([
+            'nama_bengkel' => 'UD Rumah Daun',
             'alamat' => '',
             'telepon' => '',
             'email' => '',
             'jam_operasional' => '08:00 - 17:00',
             'deskripsi' => '',
-        ];
+            'site_logo' => null,
+        ], $settings);
 
         return view('backend.admin.settings.general', compact('settings'));
     }
 
     /**
-     * Update pengaturan bengkel
+     * Update informasi usaha dan logo website.
      */
     public function updateGeneral(Request $request)
     {
@@ -113,13 +114,34 @@ class SettingController extends Controller
             'email' => 'nullable|email|max:255',
             'jam_operasional' => 'nullable|string',
             'deskripsi' => 'nullable|string',
+            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        // Untuk saat ini, kita simpan di session sebagai contoh.
-        // Nanti bisa dikembangkan untuk disimpan ke database atau file config.
-        session(['bengkel_settings' => $validated]);
+        $previousLogo = DB::table('settings')->where('key', 'site_logo')->value('value');
+        if ($request->hasFile('site_logo')) {
+            $validated['site_logo'] = $request->file('site_logo')->store('site', 'public');
+        } else {
+            unset($validated['site_logo']);
+        }
 
-        return back()->with('success', 'Pengaturan bengkel berhasil diperbarui!');
+        DB::transaction(function () use ($validated) {
+            foreach ($validated as $key => $value) {
+                if ($value === null && $key !== 'site_logo') {
+                    $value = '';
+                }
+
+                DB::table('settings')->updateOrInsert(
+                    ['key' => $key],
+                    ['value' => $value, 'updated_at' => now()]
+                );
+            }
+        });
+
+        if (isset($validated['site_logo']) && $previousLogo) {
+            Storage::disk('public')->delete($previousLogo);
+        }
+
+        return back()->with('success', 'Pengaturan usaha dan logo website berhasil diperbarui!');
     }
 
     /**

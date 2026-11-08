@@ -43,19 +43,28 @@ class TransactionController extends Controller
     {
         $user = $request->user();
 
+        $customerOrder = $user->isCustomer();
         $validated = $request->validate([
-            'customer_id' => ['nullable', Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'customer'))],
+            'customer_id' => $customerOrder
+                ? ['prohibited']
+                : ['nullable', Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'customer'))],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
-            'subtotal' => ['sometimes', 'numeric', 'min:0'],
-            'discount' => ['nullable', 'numeric', 'min:0'],
-            'tax' => ['nullable', 'numeric', 'min:0'],
-            'total_payment' => ['sometimes', 'numeric', 'min:0'],
-            'paid_amount' => ['required', 'numeric', 'min:0'],
+            'subtotal' => $customerOrder ? ['prohibited'] : ['sometimes', 'numeric', 'min:0'],
+            'discount' => $customerOrder ? ['prohibited'] : ['nullable', 'numeric', 'min:0'],
+            'tax' => $customerOrder ? ['prohibited'] : ['nullable', 'numeric', 'min:0'],
+            'total_payment' => $customerOrder ? ['prohibited'] : ['sometimes', 'numeric', 'min:0'],
+            'paid_amount' => $customerOrder
+                ? ['prohibited']
+                : ['required', 'numeric', 'min:0'],
             'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'debit', 'kredit', 'ewallet', 'transfer'])],
-            'client_uuid' => ['nullable', 'string'],
+            'client_uuid' => ['nullable', 'uuid'],
         ]);
+
+        if ($customerOrder) {
+            $validated['paid_amount'] = 0;
+        }
 
         // Idempotency keys are private to the staff account that created them.
         if (! empty($validated['client_uuid'])) {
@@ -70,7 +79,10 @@ class TransactionController extends Controller
             }
         }
 
-        $transaction = app(ApiTransactionRecorder::class)->record($user, $validated);
+        $recorder = app(ApiTransactionRecorder::class);
+        $transaction = $customerOrder
+            ? $recorder->recordCustomerOrder($user, $validated)
+            : $recorder->record($user, $validated);
 
         return response()->json([
             'message' => 'Transaksi berhasil dibuat',

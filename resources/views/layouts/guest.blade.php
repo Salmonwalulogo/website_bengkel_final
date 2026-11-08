@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ request()->routeIs('register') ? 'Daftar' : (request()->routeIs('password.*') ? 'Pemulihan Akun' : 'Masuk') }} - {{ config('app.name', 'Web Bengkel') }}</title>
+    <title>{{ request()->routeIs('register') ? 'Daftar' : (request()->routeIs('password.*') ? 'Pemulihan Akun' : 'Masuk') }} - {{ config('app.name', 'UD Rumah Daun') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=outfit:400,500,600,700,800&display=swap" rel="stylesheet">
     @vite(['resources/css/auth.css', 'resources/js/app.js'])
@@ -14,11 +14,11 @@
         <aside class="auth-aside">
             <a href="{{ url('/') }}" class="auth-brand"><span class="auth-brand-mark">RD</span> RUMAH DAUN</a>
             <div class="auth-aside-copy">
-                <div class="auth-kicker">Bengkel otomotif terpercaya</div>
-                <h1>Rawat motor. Jalani hari dengan tenang.</h1>
-                <p>Kelola booking servis, kendaraan, dan riwayat transaksi dari satu ruang yang sederhana.</p>
+                <div class="auth-kicker">Jasa, produk &amp; layanan</div>
+                <h1>Beragam kebutuhan, satu akun.</h1>
+                <p>Pesan layanan UD Rumah Daun, pantau konfirmasi, dan kelola transaksi dari satu ruang pelanggan.</p>
             </div>
-            <div class="auth-aside-footer">Servis lebih teratur, perjalanan lebih siap.</div>
+            <div class="auth-aside-footer">Pemesanan lebih mudah, kebutuhan terlayani.</div>
         </aside>
         <main class="auth-main"><section class="auth-card">{{ $slot }}</section></main>
     </div>

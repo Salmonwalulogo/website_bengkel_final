@@ -13,5 +13,6 @@ data class SyncQueueEntity(
     val status: String = "pending", // "pending", "syncing", "synced", "failed"
     val attempts: Int = 0,
     val errorMessage: String? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val ownerUserId: Long? = null
 )

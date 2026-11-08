@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -20,6 +21,17 @@ class DashboardController extends Controller
                 'vehicles_count' => Vehicle::where('user_id', $user->id)->count(),
                 'active_bookings' => Booking::where('user_id', $user->id)->whereIn('status', ['pending', 'confirmed', 'in_progress'])->count(),
                 'completed_bookings' => Booking::where('user_id', $user->id)->where('status', 'completed')->count(),
+                'total_transactions' => Transaction::where(function ($query) use ($user) {
+                    $query->where('user_id', $user->id)->orWhere('customer_id', $user->id);
+                })->count(),
+            ]);
+        }
+
+        if ($user->isKasir()) {
+            return response()->json([
+                'pending_orders' => Booking::whereIn('status', ['pending', 'confirmed'])->count(),
+                'today_payments' => Payment::where('status', 'paid')->whereDate('payment_date', now()->toDateString())->count(),
+                'total_transactions' => Transaction::count(),
             ]);
         }
 

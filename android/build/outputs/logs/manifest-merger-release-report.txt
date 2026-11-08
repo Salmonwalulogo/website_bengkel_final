@@ -119,11 +119,11 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Acer\.gradle\cache
 	android:icon
 		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:9:9-56
 	android:allowBackup
-		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:8:9-35
+		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:8:9-36
 	android:theme
-		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:13:9-72
+		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:14:9-72
 	android:usesCleartextTraffic
-		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:14:9-44
+		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:13:9-45
 	android:name
 		ADDED from C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:7:9-43
 activity#com.bengkel.app.MainActivity

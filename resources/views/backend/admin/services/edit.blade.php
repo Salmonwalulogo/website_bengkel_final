@@ -19,6 +19,15 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
+                        <label for="category" class="form-label">Kategori <span class="text-danger">*</span></label>
+                        <select class="form-select @error('category') is-invalid @enderror" id="category" name="category" required>
+                            @foreach(['Perawatan Pribadi', 'Otomotif', 'Penyewaan', 'Transportasi', 'Lainnya'] as $category)
+                                <option value="{{ $category }}" @selected(old('category', $service->category) === $category)>{{ $category }}</option>
+                            @endforeach
+                        </select>
+                        @error('category')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="mb-3">
                         <label for="name" class="form-label">Nama Layanan <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('name') is-invalid @enderror" 
                                id="name" name="name" value="{{ old('name', $service->name) }}" required>
@@ -29,6 +38,7 @@
 
                     <div class="mb-3">
                         <label for="harga" class="form-label">Harga (Rp) <span class="text-danger">*</span></label>
+                        <div class="form-text">Harga 0 akan ditampilkan sebagai perlu konfirmasi admin.</div>
                         <input type="number" class="form-control @error('harga') is-invalid @enderror" 
                                id="harga" name="harga" value="{{ old('harga', $service->harga) }}" required>
                         @error('harga')

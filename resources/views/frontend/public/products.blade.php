@@ -9,7 +9,7 @@
     
     @vite('resources/css/frontend/products.css')
 </head>
-<body>
+<body data-user-role="{{ auth()->user()?->role ?? 'guest' }}" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">

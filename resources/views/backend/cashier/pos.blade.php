@@ -6,9 +6,12 @@
 @section('content')
 @php($receipt = session('receipt'))
 @php($productData = $products->map(fn ($product) => ['id' => $product->id, 'code' => $product->product_code, 'barcode' => $product->barcode, 'name' => $product->name, 'price' => (float) $product->harga, 'stock' => $product->stok])->values())
-<div class="pos-page" data-transaction-number="{{ $transactionNumber }}" data-products='@json($productData)'>
+<div class="pos-page" data-transaction-number="{{ $transactionNumber }}" data-receipt-number="{{ $receiptNumber }}" data-products-url="{{ route('kasir.pos.products') }}" data-products='@json($productData)'>
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+    @if(session('status'))
+        <div class="alert alert-success">{{ session('status') }}</div>
     @endif
     @if($errors->any())
         <div class="alert alert-danger"><strong>Transaksi belum diproses.</strong> {{ $errors->first() }}</div>
@@ -18,10 +21,11 @@
         <div>
             <span class="pos-eyebrow"><i class="fas fa-store me-2"></i>POINT OF SALE</span>
             <h1>Transaksi Pembayaran</h1>
-            <p>Kelola penjualan suku cadang dan jasa bengkel dengan cepat dan akurat.</p>
+            <p>Catat penjualan produk, pilih pelanggan, dan proses pembayaran dengan cepat dan akurat.</p>
         </div>
         <div class="pos-meta">
             <span><i class="fas fa-receipt me-2"></i>            <b id="transaction-number">{{ $transactionNumber }}</b></span>
+            <span><i class="fas fa-ticket-alt me-2"></i>No. struk: <b>{{ $receiptNumber }}</b></span>
             <span><i class="far fa-clock me-2"></i><b id="live-clock">{{ now()->format('d/m/Y H:i:s') }}</b></span>
         </div>
     </div>
@@ -32,7 +36,7 @@
         <div class="pos-grid">
             <main class="pos-main">
                 <section class="pos-card product-panel">
-                    <div class="pos-card-heading"><div><span class="section-kicker">INVENTORI</span><h2>Tambah Barang</h2></div><span class="product-count">{{ $products->count() }} produk aktif</span></div>
+                    <div class="pos-card-heading"><div><span class="section-kicker">INVENTORI</span><h2>Tambah Barang</h2></div><div class="d-flex align-items-center gap-2"><span id="product-count" class="product-count">{{ $products->count() }} produk aktif</span><span id="product-sync-status" class="product-count" role="status" aria-live="polite">Sinkron otomatis</span></div></div>
                     <div class="search-box"><i class="fas fa-search"></i><input id="product-search" type="search" autocomplete="off" placeholder="Cari nama, kode barang, atau barcode (F2)"><kbd>F2</kbd></div>
                     <div id="product-results" class="product-results"></div>
                 </section>
@@ -66,19 +70,17 @@
                 <label class="payment-label" for="payment-method">Metode pembayaran</label>
                 <select id="payment-method" name="payment_method" class="form-select"><option value="cash">Tunai</option><option value="qris">QRIS</option><option value="debit">Debit</option><option value="kredit">Kredit</option><option value="ewallet">E-Wallet</option><option value="transfer">Transfer</option></select>
                 <div id="payment-status" class="payment-status neutral"><i class="fas fa-info-circle"></i><span>Masukkan nominal pembayaran.</span></div>
-                <div class="payment-actions"><button type="button" id="hold-transaction" class="btn btn-outline-warning"><i class="fas fa-pause me-1"></i>Tahan</button><button type="button" id="cancel-transaction" class="btn btn-outline-danger"><i class="fas fa-times me-1"></i>Batal</button></div>
+                <div class="payment-actions payment-actions-single"><button type="button" id="cancel-transaction" class="btn btn-outline-danger"><i class="fas fa-times me-1"></i>Batal</button></div>
                 <button type="submit" id="pay-button" class="btn btn-pay" disabled><i class="fas fa-print me-2"></i>BAYAR &amp; CETAK</button>
             </aside>
         </div>
         <div id="cart-inputs"></div>
     </form>
 
-    <section id="held-panel" class="pos-card held-panel d-none"><div class="pos-card-heading"><div><span class="section-kicker">DRAFT</span><h2>Transaksi Ditahan</h2></div></div><div id="held-list"></div></section>
-
     @if($receipt)
         <section id="receipt" class="receipt-card">
-            <div class="receipt-actions"><button type="button" onclick="window.print()" class="btn btn-dark"><i class="fas fa-print me-2"></i>CETAK STRUK</button><a href="{{ route('kasir.pos') }}" class="btn btn-outline-secondary">Transaksi Baru</a></div>
-            <div class="receipt-paper"><h2>BENGKEL RUMAH DAUN</h2><p class="text-center mb-3">Bukti Pembayaran</p><div class="receipt-info"><span>Nomor transaksi<strong>{{ $receipt->invoice_number }}</strong></span><span>Tanggal<strong>{{ $receipt->created_at->format('d/m/Y H:i') }}</strong></span><span>Kasir<strong>{{ $receipt->user->name }}</strong></span><span>Pelanggan<strong>{{ optional($receipt->customer)->name ?? 'Pelanggan umum' }}</strong></span></div><table><thead><tr><th>Nama</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>@foreach($receipt->details as $detail)<tr><td>{{ $detail->product_name ?? optional($detail->product)->name }}</td><td>{{ $detail->quantity }}</td><td>Rp {{ number_format($detail->price, 0, ',', '.') }}</td><td>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td></tr>@endforeach</tbody></table><div class="receipt-totals"><span>Subtotal <b>Rp {{ number_format($receipt->subtotal, 0, ',', '.') }}</b></span><span>Diskon <b>Rp {{ number_format($receipt->discount, 0, ',', '.') }}</b></span><span>Pajak <b>Rp {{ number_format($receipt->tax, 0, ',', '.') }}</b></span><span>Biaya lain <b>Rp {{ number_format($receipt->other_fee, 0, ',', '.') }}</b></span><strong>TOTAL <b>Rp {{ number_format($receipt->total_payment, 0, ',', '.') }}</b></strong><span>Bayar <b>Rp {{ number_format($receipt->paid_amount, 0, ',', '.') }}</b></span><span>Kembali <b>Rp {{ number_format($receipt->change_amount, 0, ',', '.') }}</b></span><span>Metode pembayaran <b>{{ $receipt->payment_method_label }}</b></span></div><p class="text-center receipt-thanks">Terima kasih telah berbelanja.</p></div>
+            <div class="receipt-actions"><form method="POST" action="{{ route('kasir.pos.print', $receipt) }}">@csrf<button type="submit" class="btn btn-dark"><i class="fas fa-print me-2"></i>{{ config('escpos.driver') === 'windows' ? 'CETAK STRUK' : 'BUKA CETAK STRUK' }}</button></form><a href="{{ route('kasir.pos') }}" class="btn btn-outline-secondary">Transaksi Baru</a></div>
+            <div class="receipt-paper"><h2>UD RUMAH DAUN</h2><p class="text-center mb-3">Bukti Pembayaran</p><div class="receipt-info"><span>Nomor transaksi<strong>{{ $receipt->invoice_number }}</strong></span><span>Nomor struk<strong>{{ $receipt->receipt_number }}</strong></span><span>Tanggal<strong>{{ $receipt->created_at->format('d/m/Y H:i') }}</strong></span><span>Kasir<strong>{{ $receipt->user->name }}</strong></span><span>Pelanggan<strong>{{ optional($receipt->customer)->name ?? 'Pelanggan umum' }}</strong></span></div><table><thead><tr><th>Nama</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>@foreach($receipt->details as $detail)<tr><td>{{ $detail->product_name ?? optional($detail->product)->name }}</td><td>{{ $detail->quantity }}</td><td>Rp {{ number_format($detail->price, 0, ',', '.') }}</td><td>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td></tr>@endforeach @if($receipt->booking?->service)<tr><td>{{ $receipt->booking->service->name }}</td><td>1</td><td>Rp {{ number_format($receipt->total_payment, 0, ',', '.') }}</td><td>Rp {{ number_format($receipt->total_payment, 0, ',', '.') }}</td></tr>@endif</tbody></table><div class="receipt-totals"><span>Subtotal <b>Rp {{ number_format($receipt->subtotal, 0, ',', '.') }}</b></span><span>Diskon <b>Rp {{ number_format($receipt->discount, 0, ',', '.') }}</b></span><span>Pajak <b>Rp {{ number_format($receipt->tax, 0, ',', '.') }}</b></span><span>Biaya lain <b>Rp {{ number_format($receipt->other_fee, 0, ',', '.') }}</b></span><strong>TOTAL <b>Rp {{ number_format($receipt->total_payment, 0, ',', '.') }}</b></strong><span>Bayar <b>Rp {{ number_format($receipt->paid_amount, 0, ',', '.') }}</b></span><span>Kembali <b>Rp {{ number_format($receipt->change_amount, 0, ',', '.') }}</b></span><span>Metode pembayaran <b>{{ $receipt->payment_method_label }}</b></span></div><p class="text-center receipt-thanks">Terima kasih telah menggunakan layanan UD Rumah Daun.</p></div>
         </section>
     @endif
 </div>

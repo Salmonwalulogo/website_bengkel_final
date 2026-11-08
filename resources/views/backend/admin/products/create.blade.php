@@ -17,10 +17,10 @@
                         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                        <label class="form-label">Kategori Produk <span class="text-danger">*</span></label>
                         <select name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
                             <option value="">Pilih Kategori</option>
-                            @foreach(\App\Models\Category::all() as $cat)
+                            @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                             @endforeach
                         </select>
@@ -44,6 +44,15 @@
                             <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Aktif</option>
                             <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Nonaktif</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="visibility" class="form-label">Tampilkan di katalog</label>
+                        <select id="visibility" name="visibility" class="form-select @error('visibility') is-invalid @enderror" required>
+                            <option value="public" {{ old('visibility', 'public') === 'public' ? 'selected' : '' }}>Publik saja</option>
+                            <option value="customer" {{ old('visibility') === 'customer' ? 'selected' : '' }}>Customer saja</option>
+                            <option value="both" {{ old('visibility') === 'both' ? 'selected' : '' }}>Publik dan Customer</option>
+                        </select>
+                        @error('visibility')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Foto Produk</label>

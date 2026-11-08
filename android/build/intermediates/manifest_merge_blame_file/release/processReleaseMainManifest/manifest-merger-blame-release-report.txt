@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.bengkel.app"
-4    android:versionCode="2"
-5    android:versionName="1.0.1" >
+4    android:versionCode="4"
+5    android:versionName="1.0.3" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="24"
@@ -39,8 +39,8 @@
 23-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:6:5-25:19
 24        android:name="com.bengkel.app.BengkelApplication"
 24-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:7:9-43
-25        android:allowBackup="true"
-25-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:8:9-35
+25        android:allowBackup="false"
+25-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:8:9-36
 26        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 26-->[androidx.core:core:1.13.1] C:\Users\Acer\.gradle\caches\8.14\transforms\680112a7b2416ee26c4c3355de94517d\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 27        android:extractNativeLibs="false"
@@ -53,9 +53,9 @@
 31        android:supportsRtl="true"
 31-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:12:9-35
 32        android:theme="@android:style/Theme.Material.Light.NoActionBar"
-32-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:13:9-72
-33        android:usesCleartextTraffic="true" >
-33-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:14:9-44
+32-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:14:9-72
+33        android:usesCleartextTraffic="false" >
+33-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:13:9-45
 34        <activity
 34-->C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:16:9-24:20
 35            android:name="com.bengkel.app.MainActivity"

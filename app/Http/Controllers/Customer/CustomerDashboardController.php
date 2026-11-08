@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Notification;
+use App\Models\Product;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,10 +18,23 @@ class CustomerDashboardController extends Controller
         $user = Auth::user();
 
         return view('backend.customer.dashboard', [
-            'transactionCount' => $user->transactions()->count(),
-            'vehicleCount' => $user->vehicles()->count(),
+            'transactionCount' => $user->customerTransactions()->count(),
+            'serviceCount' => Service::where('status', 'active')->count(),
             'activeBookingCount' => $user->bookings()->whereIn('status', ['pending', 'confirmed', 'in_progress'])->count(),
+            'cartCount' => array_sum(session('cart', [])),
         ]);
+    }
+
+    public function products()
+    {
+        $products = Product::where('status', 'active')
+            ->where('is_active', true)
+            ->forCustomerCatalog()
+            ->with('category')
+            ->latest()
+            ->paginate(12);
+
+        return view('backend.customer.products', compact('products'));
     }
 
     public function vehicles()
@@ -53,38 +67,61 @@ class CustomerDashboardController extends Controller
     {
         $vehicles = Auth::user()->vehicles()->orderBy('plate_number')->get();
         $services = Service::where('status', 'active')->orderBy('name')->get();
-        return view('backend.customer.booking-create', compact('vehicles', 'services'));
+        return view('backend.customer.booking-create', [
+            'vehicles' => $vehicles,
+            'services' => $services,
+            'selectedService' => request()->query('service'),
+        ]);
     }
 
     public function storeBooking(Request $request)
     {
         $validated = $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'service_id' => [
                 'required',
                 Rule::exists('services', 'id')->where(fn ($query) => $query->where('status', 'active')),
             ],
             'booking_date' => 'required|date|after_or_equal:today',
             'booking_time' => 'required|date_format:H:i',
-            'complaint' => 'nullable|string|max:2000',
+            'request_details' => 'nullable|string|max:3000',
         ]);
 
-        $vehicleOwned = Auth::user()->vehicles()->whereKey($validated['vehicle_id'])->exists();
-        abort_unless($vehicleOwned, 403);
+        if (!empty($validated['vehicle_id'])) {
+            $vehicleOwned = Auth::user()->vehicles()->whereKey($validated['vehicle_id'])->exists();
+            abort_unless($vehicleOwned, 403);
+        }
 
         Auth::user()->bookings()->create($validated);
-        return redirect()->route('customer.bookings')->with('success', 'Booking servis berhasil dibuat.');
+        return redirect()->route('customer.bookings')->with('success', 'Permintaan layanan berhasil dikirim dan menunggu konfirmasi admin.');
     }
 
     public function bookings()
     {
-        $bookings = Auth::user()->bookings()->with(['vehicle', 'service'])->latest('booking_date')->paginate(10);
+        $bookings = Auth::user()->bookings()
+            ->with(['vehicle', 'service', 'transaction.payment'])
+            ->latest('booking_date')
+            ->paginate(10);
         return view('backend.customer.bookings', compact('bookings'));
+    }
+
+    public function cancelBooking(Booking $booking)
+    {
+        abort_unless($booking->user_id === Auth::id(), 404);
+        abort_unless(
+            in_array($booking->status, ['pending', 'confirmed'], true) && !$booking->transaction()->exists(),
+            422,
+            'Permintaan yang sudah diproses pembayarannya tidak dapat dibatalkan melalui akun pelanggan.'
+        );
+
+        $booking->update(['status' => 'cancelled']);
+
+        return redirect()->route('customer.bookings')->with('success', 'Permintaan layanan dibatalkan.');
     }
 
     public function transactions()
     {
-        $transactions = Auth::user()->transactions()->with('payment')->latest()->paginate(10);
+        $transactions = Auth::user()->customerTransactions()->with(['payment', 'booking.service'])->latest()->paginate(10);
         return view('backend.customer.transactions', compact('transactions'));
     }
 

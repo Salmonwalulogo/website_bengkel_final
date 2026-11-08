@@ -1,4 +1,4 @@
-C:\xampp\htdocs\website-bengkel\android\build.gradle.kts:15: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
+C:\xampp\htdocs\website-bengkel\android\build.gradle.kts:19: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
         targetSdk = 34
         ~~~~~~~~~~~~~~
 
@@ -180,6 +180,26 @@ work = "2.9.1"
    However, you may simply not be aware that a more recent version is
    available, and that is what this lint check helps find.
 
+C:\xampp\htdocs\website-bengkel\android\src\main\AndroidManifest.xml:8: Warning: The attribute android:allowBackup is deprecated from Android 12 and higher and may be removed in future versions. Consider adding the attribute android:dataExtractionRules specifying an @xml resource which configures cloud backups and device transfers on Android 12 and higher. [DataExtractionRules]
+        android:allowBackup="false"
+                             ~~~~~
+
+   Explanation for issues of type "DataExtractionRules":
+   Before Android 12, the attributes android:allowBackup and
+   android:fullBackupContent were used to configure all forms of backup,
+   including cloud backups, device-to-device transfers and adb backup.
+
+   In Android 12 and higher, these attributes have been deprecated and will
+   only apply to cloud backups. You should instead use the attribute
+   android:dataExtractionRules, specifying an @xml resource that configures
+   which files to back up, for cloud backups and for device-to-device
+   transfers, separately. If your minSdkVersion supports older versions,
+   you'll still want to specify an android:fullBackupContent resource if the
+   default behavior is not right for your app.
+
+   https://developer.android.com/about/versions/12/backup-restore#xml-changes
+   https://goo.gle/DataExtractionRules
+
 C:\xampp\htdocs\website-bengkel\android\src\main\res\drawable\ic_launcher_background.xml:2: Warning: The resource R.drawable.ic_launcher_background appears to be unused [UnusedResources]
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
 ^
@@ -198,4 +218,4 @@ C:\xampp\htdocs\website-bengkel\android\src\main\res\drawable\ic_launcher_backgr
    lint.unused-resources.exclude-tests =true.
    ,
 
-0 errors, 50 warnings
+0 errors, 51 warnings

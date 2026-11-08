@@ -29,7 +29,7 @@
                     @forelse($transactions as $trx)
                     <tr>
                         <td><strong class="text-primary">{{ $trx->invoice_number }}</strong></td>
-                        <td>{{ $trx->user->name ?? '-' }}</td>
+                        <td>{{ $trx->customer->name ?? $trx->user->name ?? '-' }}</td>
                         <td class="fw-bold">Rp {{ number_format($trx->total_payment, 0, ',', '.') }}</td>
                         <td>
                             <span class="badge bg-secondary">{{ ucfirst($trx->payment_method) }}</span>
@@ -49,7 +49,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="status" value="completed">
-                                <button type="submit" class="btn-action btn-edit" title="Proses pesanan"><i class="fas fa-check"></i></button>
+                                <button type="submit" class="btn-action btn-edit" title="Konfirmasi pembayaran"><i class="fas fa-check"></i></button>
                             </form>
                             <form action="{{ route('admin.transactions.updateStatus', $trx) }}" method="POST" class="d-inline">
                                 @csrf
@@ -58,13 +58,6 @@
                                 <button type="submit" class="btn-action btn-delete" title="Batalkan pesanan"><i class="fas fa-times"></i></button>
                             </form>
                             @endif
-                            <form action="{{ route('admin.transactions.destroy', $trx) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus transaksi ini?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-action btn-delete" title="Hapus">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
                         </td>
                     </tr>
                     @empty

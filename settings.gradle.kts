@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BengkelApp"
+rootProject.name = "RumahDaunApp"
 include(":app")
 project(":app").projectDir = file("android")

@@ -3,6 +3,7 @@ package com.bengkel.app.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import com.bengkel.app.BuildConfig
 import com.bengkel.app.data.local.entity.UserEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,7 @@ class SessionManager(context: Context) {
         private const val KEY_USER_ROLE = "user_role"
         private const val KEY_USER_PHONE = "user_phone"
         private const val KEY_BASE_URL = "base_url"
-        const val DEFAULT_BASE_URL = "https://192.168.52.85/website-bengkel/public/api/"
+        val DEFAULT_BASE_URL = BuildConfig.DEFAULT_WEBSITE_URL
     }
 
     private val _currentUserFlow = MutableStateFlow(getCurrentUser())
@@ -76,8 +77,10 @@ class SessionManager(context: Context) {
     fun setBaseUrl(url: String) {
         var formatted = url.trim()
         val parsed = Uri.parse(formatted)
-        require(parsed.scheme.equals("https", ignoreCase = true) && !parsed.host.isNullOrBlank()) {
-            "Alamat API harus menggunakan HTTPS."
+        val isHttps = parsed.scheme.equals("https", ignoreCase = true)
+        val isDemoHttp = BuildConfig.DEBUG && parsed.scheme.equals("http", ignoreCase = true)
+        require((isHttps || isDemoHttp) && !parsed.host.isNullOrBlank()) {
+            "Gunakan alamat API HTTPS, atau HTTP hanya untuk APK debug di jaringan demo lokal."
         }
 
         if (!formatted.endsWith("/")) {

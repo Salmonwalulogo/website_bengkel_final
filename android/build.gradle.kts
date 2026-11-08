@@ -5,6 +5,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val releaseWebsiteUrl = providers.gradleProperty("bengkelWebsiteUrl")
+    .orElse("https://domain-anda.id/website-bengkel/public")
+    .get()
+
 android {
     namespace = "com.bengkel.app"
     compileSdk = 34
@@ -13,8 +17,8 @@ android {
         applicationId = "com.bengkel.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 4
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -23,9 +27,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "DEFAULT_WEBSITE_URL", "\"http://192.168.42.41/website-bengkel/public\"")
+        }
         release {
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
+            buildConfigField("String", "DEFAULT_WEBSITE_URL", "\"$releaseWebsiteUrl\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -41,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {

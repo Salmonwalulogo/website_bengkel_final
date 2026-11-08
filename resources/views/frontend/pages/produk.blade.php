@@ -3,54 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produk - Rumah Daun Bengkel Otomotif</title>
+    <title>Produk - UD Rumah Daun</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
+
     @vite('resources/css/frontend/frontend.css')
     @vite('resources/css/frontend/produk.css')
+    @vite('resources/css/frontend/navigation.css')
     @vite('resources/js/frontend.js')
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <a href="{{ route('home') }}" class="navbar-brand d-flex align-items-center gap-3">
-                <img src="{{ asset('images/logo-rumah-daun.png') }}" alt="Logo">
-                <div>
-                    <div  class="page-style-1">RUMAH DAUN</div>
-                    <div  class="page-style-2">BENGKEL OTOMOTIF</div>
-                </div>
-            </a>
-            <button class="nav-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="nav-links">
-                <a href="{{ route('home') }}">Beranda</a>
-                <a href="{{ route('layanan') }}">Layanan</a>
-                <a href="{{ route('produk') }}" class="active">Produk</a>
-                <a href="{{ route('tentang') }}">Tentang</a>
-                <a href="{{ route('kontak') }}">Kontak</a>
-                @auth
-                    <a href="{{ url('/dashboard') }}" class="btn btn-sm btn-outline-light ms-3">Dashboard</a>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light ms-3">Login</a>
-                @endauth
-            </div>
-        </div>
-    </nav>
+<body data-user-role="{{ auth()->user()?->role ?? 'guest' }}" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
+    @include('frontend.partials.navigation')
 
-    <!-- Page Header -->
     <section class="page-header">
         <div class="container">
             <h1>Produk <span>Kami</span></h1>
-            <p class="lead">Berbagai produk berkualitas untuk motor Anda</p>
+            <p class="lead">Berbagai produk berkualitas untuk kebutuhan rumah, usaha, dan harian Anda</p>
         </div>
     </section>
 
     <!-- Products Section -->
     <section class="products-section">
         <div class="container">
+            @if(session('success'))
+                <div class="alert alert-success" role="status">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+            @endif
             <div class="row">
                 @forelse($products as $product)
                 <div class="col-md-4">
@@ -61,7 +41,7 @@
                             @else
                                 <i class="bi bi-box-seam page-style-3" ></i>
                             @endif
-                            <span class="product-badge">Tersedia</span>
+                            <span class="product-badge">{{ $product->stok > 0 ? 'Tersedia' : 'Habis' }}</span>
                         </div>
                         <div class="product-info">
                             <span class="product-category">{{ $product->category->name ?? 'Umum' }}</span>
@@ -70,14 +50,23 @@
                                 Rp {{ number_format($product->harga, 0, ',', '.') }}
                             </div>
                             <div class="d-grid gap-2">
-                                <a class="btn-order text-center text-decoration-none" target="_blank" href="https://wa.me/6282124626248?text={{ urlencode('Halo Rumah Daun, saya ingin memesan ' . $product->name . ' dengan harga Rp ' . number_format($product->harga, 0, ',', '.')) }}">
-                                    <i class="bi bi-whatsapp me-2"></i>Pesan via WhatsApp
+                                <a class="btn-order text-center text-decoration-none" target="_blank" rel="noopener noreferrer" href="https://wa.me/6285165021473?text={{ urlencode('Halo UD Rumah Daun, saya ingin bertanya tentang ' . $product->name) }}">
+                                    <i class="bi bi-whatsapp me-2"></i>Tanya Produk
                                 </a>
                                 <form action="{{ route('cart.add', $product) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="quantity" value="1">
-                                    <button class="btn btn-outline-dark w-100" type="submit"><i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang</button>
+                                    <button class="btn btn-outline-dark w-100" type="submit" @disabled($product->stok < 1)><i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang</button>
                                 </form>
+                                @if($product->stok > 0)
+                                    @auth
+                                        @if(auth()->user()->role === 'customer')
+                                            <a href="{{ route('cart.buy-now', $product) }}" class="btn btn-success w-100"><i class="bi bi-bag-check me-2"></i>Beli Sekarang</a>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('cart.buy-now', $product) }}" class="btn btn-success w-100"><i class="bi bi-bag-check me-2"></i>Beli Sekarang</a>
+                                    @endauth
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -98,10 +87,9 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
-            <p>&copy; {{ date('Y') }} Rumah Daun Bengkel Otomotif. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} UD Rumah Daun. Produk berkualitas untuk kebutuhan sehari-hari dan usaha Anda.</p>
         </div>
     </footer>
 

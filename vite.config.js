@@ -7,6 +7,7 @@ export default defineConfig({
             input: [
                 "resources/css/app.css",
                 "resources/css/frontend/frontend.css",
+                "resources/css/frontend/navigation.css",
                 "resources/css/components/dropdown.css",
                 "resources/css/backend/show.css",
                 "resources/css/backend/profile.css",
@@ -35,6 +36,7 @@ export default defineConfig({
                 "resources/css/frontend/tentang.css",
                 "resources/css/frontend/kontak.css",
                 "resources/css/backend/backend.css",
+                "resources/css/backend/premium.css",
                 "resources/css/auth.css",
                 "resources/js/app.js",
                 "resources/js/cashier-pos.js",

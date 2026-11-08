@@ -16,6 +16,7 @@ import androidx.sqlite.db.SupportSQLiteStatement;
 import com.bengkel.app.data.local.entity.ProductEntity;
 import java.lang.Class;
 import java.lang.Exception;
+import java.lang.Integer;
 import java.lang.Long;
 import java.lang.Object;
 import java.lang.Override;
@@ -38,6 +39,10 @@ public final class ProductDao_Impl implements ProductDao {
   private final EntityInsertionAdapter<ProductEntity> __insertionAdapterOfProductEntity;
 
   private final EntityDeletionOrUpdateAdapter<ProductEntity> __updateAdapterOfProductEntity;
+
+  private final SharedSQLiteStatement __preparedStmtOfDeleteProductById;
+
+  private final SharedSQLiteStatement __preparedStmtOfReplaceCategoryId;
 
   private final SharedSQLiteStatement __preparedStmtOfDecrementStock;
 
@@ -122,6 +127,22 @@ public final class ProductDao_Impl implements ProductDao {
         statement.bindLong(11, entity.getId());
       }
     };
+    this.__preparedStmtOfDeleteProductById = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM products WHERE id = ?";
+        return _query;
+      }
+    };
+    this.__preparedStmtOfReplaceCategoryId = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "UPDATE products SET categoryId = ? WHERE categoryId = ?";
+        return _query;
+      }
+    };
     this.__preparedStmtOfDecrementStock = new SharedSQLiteStatement(__db) {
       @Override
       @NonNull
@@ -184,6 +205,59 @@ public final class ProductDao_Impl implements ProductDao {
           return Unit.INSTANCE;
         } finally {
           __db.endTransaction();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object deleteProductById(final long id, final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteProductById.acquire();
+        int _argIndex = 1;
+        _stmt.bindLong(_argIndex, id);
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteProductById.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object replaceCategoryId(final long oldCategoryId, final long newCategoryId,
+      final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfReplaceCategoryId.acquire();
+        int _argIndex = 1;
+        _stmt.bindLong(_argIndex, newCategoryId);
+        _argIndex = 2;
+        _stmt.bindLong(_argIndex, oldCategoryId);
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfReplaceCategoryId.release(_stmt);
         }
       }
     }, $completion);
@@ -438,6 +512,37 @@ public final class ProductDao_Impl implements ProductDao {
             _result = new ProductEntity(_tmpId,_tmpCategoryId,_tmpCategoryName,_tmpName,_tmpDescription,_tmpHarga,_tmpStok,_tmpStatus,_tmpPhoto,_tmpIsSynced);
           } else {
             _result = null;
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object countActiveProductsInCategory(final long categoryId,
+      final Continuation<? super Integer> $completion) {
+    final String _sql = "SELECT COUNT(*) FROM products WHERE categoryId = ? AND status = 'active'";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    _statement.bindLong(_argIndex, categoryId);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<Integer>() {
+      @Override
+      @NonNull
+      public Integer call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final Integer _result;
+          if (_cursor.moveToFirst()) {
+            final int _tmp;
+            _tmp = _cursor.getInt(0);
+            _result = _tmp;
+          } else {
+            _result = 0;
           }
           return _result;
         } finally {

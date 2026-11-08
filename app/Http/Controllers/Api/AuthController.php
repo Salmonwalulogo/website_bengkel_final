@@ -56,7 +56,7 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'username' => ['nullable', 'string', 'max:255', 'unique:users,username'],
             'no_hp' => ['nullable', 'string', 'max:20'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
 
         $username = $validated['username'] ?? strstr($validated['email'], '@', true);

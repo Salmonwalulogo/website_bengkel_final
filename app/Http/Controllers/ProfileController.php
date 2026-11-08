@@ -57,6 +57,11 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        if ($user->hasBusinessHistory()) {
+            return back()->withErrors([
+                'password' => 'Akun memiliki riwayat kendaraan, layanan, transaksi, atau audit dan tidak dapat dihapus.',
+            ], 'userDeletion');
+        }
 
         Auth::logout();
 

@@ -8,9 +8,14 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $services = Service::all();
+        $query = Service::query();
+        if (! $request->user()?->isAdmin()) {
+            $query->where('status', 'active');
+        }
+
+        $services = $query->orderBy('category')->orderBy('name')->get();
         return response()->json(['data' => $services]);
     }
 
@@ -22,12 +27,14 @@ class ServiceController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'harga' => ['required', 'numeric', 'min:0'],
             'duration' => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'string', 'in:active,inactive'],
         ]);
 
+        $validated['category'] ??= 'Lainnya';
         $service = Service::create($validated);
 
         return response()->json(['message' => 'Layanan berhasil ditambahkan', 'data' => $service], 201);
@@ -41,6 +48,7 @@ class ServiceController extends Controller
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
+            'category' => ['sometimes', 'nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'harga' => ['sometimes', 'numeric', 'min:0'],
             'duration' => ['nullable', 'string', 'max:50'],
@@ -56,6 +64,14 @@ class ServiceController extends Controller
     {
         if (! $request->user()->isAdmin()) {
             return response()->json(['message' => 'Hanya Admin yang dapat menghapus layanan'], 403);
+        }
+
+        if ($service->bookings()->exists()) {
+            $service->update(['status' => 'inactive']);
+
+            return response()->json([
+                'message' => 'Layanan dinonaktifkan agar riwayat permintaan tetap tersimpan.',
+            ]);
         }
 
         $service->delete();

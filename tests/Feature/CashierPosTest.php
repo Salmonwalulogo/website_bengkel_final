@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -12,6 +13,45 @@ use Tests\TestCase;
 class CashierPosTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_cashier_can_open_a_browser_printable_receipt(): void
+    {
+        config(['escpos.driver' => 'browser']);
+
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $category = Category::create(['name' => 'Retail']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'name' => 'Produk Cetak',
+            'harga' => 10000,
+            'stok' => 5,
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $transaction = Transaction::create([
+            'user_id' => $cashier->id,
+            'subtotal' => 10000,
+            'paid_amount' => 10000,
+            'total_payment' => 10000,
+            'status' => 'completed',
+            'payment_method' => 'cash',
+        ]);
+        $transaction->details()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'quantity' => 1,
+            'price' => 10000,
+            'subtotal' => 10000,
+        ]);
+
+        $this->actingAs($cashier)
+            ->post(route('kasir.pos.print', $transaction))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertSee($transaction->receipt_number)
+            ->assertSee('Produk Cetak')
+            ->assertSee('window.print()', false);
+    }
 
     public function test_cashier_can_open_pos_and_complete_a_transaction(): void
     {
@@ -68,6 +108,101 @@ class CashierPosTest extends TestCase
         ]);
         $this->assertDatabaseCount('transactions', 1);
         $this->assertDatabaseHas('products', ['id' => $product->id, 'stok' => 3]);
+    }
+
+    public function test_each_transaction_receipt_gets_a_different_number_matching_the_pos_preview(): void
+    {
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $category = Category::create(['name' => 'Jasa']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'name' => 'Layanan Test',
+            'harga' => 10000,
+            'stok' => 5,
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($cashier)->get(route('kasir.pos'))->assertOk();
+        $firstPreview = \App\Models\Transaction::nextInvoiceNumber();
+        $firstReceiptPreview = \App\Models\Transaction::nextReceiptNumber();
+
+        $firstResponse = $this->post(route('kasir.pos.store'), [
+            'checkout_token' => (string) Str::uuid(),
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+            'paid_amount' => 10000,
+            'payment_method' => 'cash',
+        ]);
+        $firstResponse->assertRedirect(route('kasir.pos'));
+
+        $firstNumber = \App\Models\Transaction::latest('id')->value('invoice_number');
+        $firstReceiptNumber = \App\Models\Transaction::latest('id')->value('receipt_number');
+        $this->assertSame($firstPreview, $firstNumber);
+        $this->assertSame($firstReceiptPreview, $firstReceiptNumber);
+        $this->get(route('kasir.pos'))->assertSee($firstReceiptNumber);
+
+        $secondPreview = \App\Models\Transaction::nextInvoiceNumber();
+        $secondReceiptPreview = \App\Models\Transaction::nextReceiptNumber();
+        $this->post(route('kasir.pos.store'), [
+            'checkout_token' => (string) Str::uuid(),
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+            'paid_amount' => 10000,
+            'payment_method' => 'cash',
+        ])->assertRedirect(route('kasir.pos'));
+
+        $secondNumber = \App\Models\Transaction::latest('id')->value('invoice_number');
+        $secondReceiptNumber = \App\Models\Transaction::latest('id')->value('receipt_number');
+        $this->assertSame($secondPreview, $secondNumber);
+        $this->assertSame($secondReceiptPreview, $secondReceiptNumber);
+        $this->assertNotSame($firstNumber, $secondNumber);
+        $this->assertNotSame($firstReceiptNumber, $secondReceiptNumber);
+        $this->assertSame(2, \App\Models\Transaction::whereIn('invoice_number', [$firstNumber, $secondNumber])->count());
+        $this->assertSame(2, \App\Models\Transaction::whereIn('receipt_number', [$firstReceiptNumber, $secondReceiptNumber])->count());
+    }
+
+    public function test_cashier_product_catalog_reflects_admin_product_changes(): void
+    {
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $category = Category::create(['name' => 'Retail']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'product_code' => 'SYNC001',
+            'barcode' => '899000000010',
+            'name' => 'Produk Lama',
+            'harga' => 10000,
+            'stok' => 5,
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $inactiveProduct = Product::create([
+            'category_id' => $category->id,
+            'product_code' => 'SYNC002',
+            'name' => 'Produk Nonaktif',
+            'harga' => 20000,
+            'stok' => 5,
+            'status' => 'inactive',
+            'is_active' => false,
+        ]);
+
+        $product->update(['name' => 'Produk Baru', 'harga' => 15000, 'stok' => 3]);
+
+        $this->actingAs($cashier)
+            ->getJson(route('kasir.pos.products'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertJsonFragment([
+                'id' => $product->id,
+                'name' => 'Produk Baru',
+                'price' => 15000,
+                'stock' => 3,
+            ])
+            ->assertJsonMissing(['id' => $inactiveProduct->id]);
+
+        $inactiveProduct->update(['status' => 'active', 'is_active' => true, 'stok' => 0]);
+
+        $this->actingAs($cashier)
+            ->getJson(route('kasir.pos.products'))
+            ->assertJsonMissing(['id' => $inactiveProduct->id]);
     }
 
     public function test_cashier_cannot_complete_transaction_when_payment_is_insufficient(): void

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0"><i class="fas fa-wrench me-2"></i>Layanan</h2>
+    <h2 class="mb-0"><i class="fas fa-concierge-bell me-2"></i>Jasa &amp; Layanan</h2>
     <a href="{{ route('admin.services.create') }}" class="btn btn-primary">
         <i class="fas fa-plus me-2"></i>Tambah Layanan
     </a>
@@ -18,6 +18,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Nama Layanan</th>
+                        <th>Kategori</th>
                         <th>Deskripsi</th>
                         <th>Harga</th>
                         <th>Durasi</th>
@@ -30,8 +31,9 @@
                     <tr>
                         <td><strong>#{{ $service->id }}</strong></td>
                         <td><strong>{{ $service->name }}</strong></td>
+                        <td>{{ $service->category ?: 'Lainnya' }}</td>
                         <td>{{ Str::limit($service->description, 50) }}</td>
-                        <td class="fw-bold text-success">Rp {{ number_format($service->harga, 0, ',', '.') }}</td>
+                        <td class="fw-bold text-success">{{ (float) $service->harga > 0 ? 'Rp ' . number_format($service->harga, 0, ',', '.') : 'Konfirmasi harga' }}</td>
                         <td>{{ $service->duration ?? '-' }}</td>
                         <td>
                             <span class="badge {{ $service->status === 'active' ? 'bg-success' : 'bg-danger' }}">
@@ -42,7 +44,7 @@
                             <a href="{{ route('admin.services.edit', $service) }}" class="btn-action btn-edit" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('admin.services.destroy', $service) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus layanan ini?');">
+                            <form action="{{ route('admin.services.destroy', $service) }}" method="POST" class="d-inline" onsubmit="return confirm('Layanan dengan riwayat pesanan akan dinonaktifkan. Lanjutkan?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn-action btn-delete" title="Hapus">
@@ -53,7 +55,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             <i class="fas fa-wrench fa-3x mb-3 d-block"></i>
                             Belum ada data layanan
                         </td>

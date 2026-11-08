@@ -49,13 +49,6 @@
                             <a href="{{ route('admin.payments.edit', $payment) }}" class="btn-action btn-edit" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('admin.payments.destroy', $payment) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus pembayaran ini?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-action btn-delete" title="Hapus">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
                         </td>
                     </tr>
                     @empty

@@ -20,16 +20,24 @@
             height: 100vh;
             overflow-y: auto;
         }
+        .backend-page .sidebar {
+            background: linear-gradient(180deg, #14263d 0%, #0e1a2c 100%);
+        }
         
         .sidebar-brand {
             height: 70px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 10px 16px;
             color: white;
             font-weight: bold;
             font-size: 1.2rem;
+            text-decoration: none;
         }
+        .sidebar-brand strong { font-size: .78rem; letter-spacing: .04em; }
+        .sidebar-brand small { color: #d8c18a; font-size: .6rem; letter-spacing: .12em; }
         
         .sidebar-nav {
             padding: 0;

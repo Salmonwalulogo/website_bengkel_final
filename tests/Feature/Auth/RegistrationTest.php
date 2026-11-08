@@ -25,7 +25,13 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertGuest();
+        $this->assertDatabaseHas('users', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'role' => 'customer',
+        ]);
+        $response->assertRedirect(route('login', absolute: false));
+        $response->assertSessionHas('status', 'Akun berhasil dibuat. Silakan masuk dengan akun baru Anda.');
     }
 }

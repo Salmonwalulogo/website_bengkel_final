@@ -7,15 +7,18 @@ use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use App\Models\User;
 use App\Models\Product;
+use App\Models\Payment;
+use App\Services\PendingTransactionLifecycle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class TransactionController extends Controller
 {
     public function index()
     {
-        $transactions = Transaction::with('user')
+        $transactions = Transaction::with(['user', 'customer', 'booking.service'])
                                   ->latest()
                                   ->paginate(10);
         return view('backend.admin.transactions.index', compact('transactions'));
@@ -38,7 +41,7 @@ class TransactionController extends Controller
             'payment_method' => 'required|in:cash,qris,debit,kredit,ewallet,transfer',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
-            'products.*.quantity' => 'required|integer|min:1',
+            'products.*.quantity' => 'required|integer|min:0',
         ]);
 
         DB::beginTransaction();
@@ -48,6 +51,10 @@ class TransactionController extends Controller
             $details = [];
 
             foreach ($validated['products'] as $item) {
+                if ((int) $item['quantity'] === 0) {
+                    continue;
+                }
+
                 $product = Product::lockForUpdate()->findOrFail($item['product_id']);
                 
                 if ($product->stok < $item['quantity']) {
@@ -67,9 +74,15 @@ class TransactionController extends Controller
                 $product->decrement('stok', $item['quantity']);
             }
 
+            if ($details === []) {
+                throw new \Exception('Pilih minimal satu produk untuk membuat transaksi.');
+            }
+
             // Buat transaksi
             $transaction = Transaction::create([
-                'user_id' => $validated['user_id'],
+                'user_id' => $request->user()->id,
+                'customer_id' => $validated['user_id'],
+                'subtotal' => $totalPayment,
                 'total_payment' => $totalPayment,
                 'payment_method' => $validated['payment_method'],
                 'status' => 'pending',
@@ -80,6 +93,14 @@ class TransactionController extends Controller
                 $detail['transaction_id'] = $transaction->id;
                 TransactionDetail::create($detail);
             }
+
+            Payment::create([
+                'transaction_id' => $transaction->id,
+                'payment_code' => 'PAY-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                'amount' => $totalPayment,
+                'payment_date' => now(),
+                'status' => 'pending',
+            ]);
 
             DB::commit();
 
@@ -94,26 +115,27 @@ class TransactionController extends Controller
 
     public function show(Transaction $transaction)
     {
-        $transaction->load(['user', 'details.product']);
+        $transaction->load(['user', 'customer', 'booking.service', 'details.product']);
         return view('backend.admin.transactions.show', compact('transaction'));
     }
 
-    public function updateStatus(Request $request, Transaction $transaction)
+    public function updateStatus(
+        Request $request,
+        Transaction $transaction,
+        PendingTransactionLifecycle $lifecycle
+    )
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,completed,cancelled',
         ]);
 
-        $transaction->update(['status' => $validated['status']]);
+        if ($validated['status'] === 'cancelled') {
+            $lifecycle->cancel($transaction);
+        } else {
+            $lifecycle->markPaid($transaction);
+        }
 
         return back()->with('success', 'Status pesanan berhasil diperbarui.');
     }
 
-    public function destroy(Transaction $transaction)
-    {
-        $transaction->delete();
-
-        return redirect()->route('admin.transactions.index')
-            ->with('success', 'Transaksi berhasil dihapus.');
-    }
 }

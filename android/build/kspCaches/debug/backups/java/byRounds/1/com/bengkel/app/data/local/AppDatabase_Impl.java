@@ -57,19 +57,19 @@ public final class AppDatabase_Impl extends AppDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(3) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `username` TEXT NOT NULL, `noHp` TEXT, `role` TEXT NOT NULL, `photo` TEXT, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `vehicles` (`localId` TEXT NOT NULL, `serverId` INTEGER, `userId` INTEGER NOT NULL, `ownerName` TEXT, `plateNumber` TEXT NOT NULL, `brand` TEXT NOT NULL, `model` TEXT NOT NULL, `year` INTEGER NOT NULL, `color` TEXT NOT NULL, `photoPath` TEXT, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`localId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `services` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `harga` REAL NOT NULL, `duration` TEXT, `status` TEXT NOT NULL, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `products` (`id` INTEGER NOT NULL, `categoryId` INTEGER, `categoryName` TEXT, `name` TEXT NOT NULL, `description` TEXT, `harga` REAL NOT NULL, `stok` INTEGER NOT NULL, `status` TEXT NOT NULL, `photo` TEXT, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`id`))");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `bookings` (`localId` TEXT NOT NULL, `serverId` INTEGER, `userId` INTEGER NOT NULL, `userName` TEXT, `vehicleId` INTEGER NOT NULL, `vehiclePlate` TEXT, `serviceId` INTEGER NOT NULL, `serviceName` TEXT, `bookingDate` TEXT NOT NULL, `bookingTime` TEXT NOT NULL, `complaint` TEXT NOT NULL, `status` TEXT NOT NULL, `notes` TEXT, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`localId`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `bookings` (`localId` TEXT NOT NULL, `serverId` INTEGER, `userId` INTEGER NOT NULL, `userName` TEXT, `vehicleId` INTEGER, `vehiclePlate` TEXT, `serviceId` INTEGER NOT NULL, `serviceName` TEXT, `bookingDate` TEXT NOT NULL, `bookingTime` TEXT NOT NULL, `complaint` TEXT NOT NULL, `status` TEXT NOT NULL, `notes` TEXT, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`localId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `transactions` (`localId` TEXT NOT NULL, `serverId` INTEGER, `userId` INTEGER NOT NULL, `customerId` INTEGER, `customerName` TEXT, `subtotal` REAL NOT NULL, `discount` REAL NOT NULL, `tax` REAL NOT NULL, `totalPayment` REAL NOT NULL, `paidAmount` REAL NOT NULL, `changeAmount` REAL NOT NULL, `status` TEXT NOT NULL, `paymentMethod` TEXT NOT NULL, `createdAt` TEXT NOT NULL, `isSynced` INTEGER NOT NULL, PRIMARY KEY(`localId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `transaction_details` (`localId` TEXT NOT NULL, `transactionLocalId` TEXT NOT NULL, `productId` INTEGER, `itemName` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `price` REAL NOT NULL, `subtotal` REAL NOT NULL, PRIMARY KEY(`localId`))");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `sync_queue` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `entityType` TEXT NOT NULL, `action` TEXT NOT NULL, `entityLocalId` TEXT NOT NULL, `payloadJson` TEXT NOT NULL, `status` TEXT NOT NULL, `attempts` INTEGER NOT NULL, `errorMessage` TEXT, `createdAt` INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `sync_queue` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `entityType` TEXT NOT NULL, `action` TEXT NOT NULL, `entityLocalId` TEXT NOT NULL, `payloadJson` TEXT NOT NULL, `status` TEXT NOT NULL, `attempts` INTEGER NOT NULL, `errorMessage` TEXT, `createdAt` INTEGER NOT NULL, `ownerUserId` INTEGER)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '529f7f97d0fd0aa9aba73cbeddf924c5')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '79cdfd6af68a7bf1726104eccd7eb8f8')");
       }
 
       @Override
@@ -206,7 +206,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         _columnsBookings.put("serverId", new TableInfo.Column("serverId", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsBookings.put("userId", new TableInfo.Column("userId", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsBookings.put("userName", new TableInfo.Column("userName", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsBookings.put("vehicleId", new TableInfo.Column("vehicleId", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsBookings.put("vehicleId", new TableInfo.Column("vehicleId", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsBookings.put("vehiclePlate", new TableInfo.Column("vehiclePlate", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsBookings.put("serviceId", new TableInfo.Column("serviceId", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsBookings.put("serviceName", new TableInfo.Column("serviceName", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -267,7 +267,7 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoTransactionDetails + "\n"
                   + " Found:\n" + _existingTransactionDetails);
         }
-        final HashMap<String, TableInfo.Column> _columnsSyncQueue = new HashMap<String, TableInfo.Column>(9);
+        final HashMap<String, TableInfo.Column> _columnsSyncQueue = new HashMap<String, TableInfo.Column>(10);
         _columnsSyncQueue.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsSyncQueue.put("entityType", new TableInfo.Column("entityType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsSyncQueue.put("action", new TableInfo.Column("action", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -277,6 +277,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         _columnsSyncQueue.put("attempts", new TableInfo.Column("attempts", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsSyncQueue.put("errorMessage", new TableInfo.Column("errorMessage", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsSyncQueue.put("createdAt", new TableInfo.Column("createdAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsSyncQueue.put("ownerUserId", new TableInfo.Column("ownerUserId", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysSyncQueue = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesSyncQueue = new HashSet<TableInfo.Index>(0);
         final TableInfo _infoSyncQueue = new TableInfo("sync_queue", _columnsSyncQueue, _foreignKeysSyncQueue, _indicesSyncQueue);
@@ -288,7 +289,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "529f7f97d0fd0aa9aba73cbeddf924c5", "8d8b605c3e68266ee34dfe1d065bb7a8");
+    }, "79cdfd6af68a7bf1726104eccd7eb8f8", "4d3256345d6c5c2c669a8ce73aa01389");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

@@ -10,6 +10,30 @@
     color: var(--backend-ink);
     background: #f5f8f7;
 }
+.backend-page .sidebar-brand img {
+    width: 46px;
+    height: 46px;
+    padding: 2px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 9px;
+}
+.backend-page .sidebar-brand span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    line-height: 1.1;
+}
+.backend-page .sidebar-brand strong {
+    font-size: .83rem;
+    letter-spacing: .04em;
+}
+.backend-page .sidebar-brand small {
+    color: #d8c18a;
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+}
 
 /* Shared dashboard surfaces */
 .dashboard-hero {
@@ -50,8 +74,12 @@
     transition: transform .2s ease, box-shadow .2s ease;
 }
 .dashboard-hero-action:hover { color: #173c40; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.16); }
+.customer-dashboard-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.customer-dashboard-actions .dashboard-hero-action { justify-content: center; }
+.customer-dashboard-actions .customer-whatsapp-action { color: #fff; background: #16766d; }
+.customer-dashboard-actions .customer-whatsapp-action:hover { color: #fff; background: #105b55; }
 .hero-date { padding: 11px 15px; color: rgba(255,255,255,.9); background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; font-size: .9rem; }
-.quick-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
 .quick-actions a {
     display: grid; grid-template-columns: 42px 1fr; grid-template-rows: auto auto;
     column-gap: 12px; align-items: center; padding: 16px;
@@ -72,6 +100,8 @@
 }
 @media (max-width: 576px) {
     .dashboard-hero { align-items: flex-start; flex-direction: column; padding: 26px 22px; }
+    .customer-dashboard-actions { width: 100%; }
+    .customer-dashboard-actions .dashboard-hero-action { flex: 1 1 100%; }
     .quick-actions { grid-template-columns: 1fr; }
 }
 .backend-table-wrap {

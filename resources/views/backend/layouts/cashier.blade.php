@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Kasir Dashboard') - Web Bengkel</title>
+    <title>@yield('title', 'Kasir Dashboard') - UD Rumah Daun</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -17,37 +17,47 @@
     
     @stack('styles')
     @vite('resources/css/backend/cashier.css')
+    @vite('resources/css/backend/premium.css')
 </head>
-<body class="backend-page">
+<body class="backend-page" data-user-role="{{ auth()->user()->role }}" data-authenticated="true">
     <div class="sidebar" id="cashier-sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-cash-register me-2"></i> KASIR
-        </div>
-        <ul class="sidebar-nav">
+        <a href="{{ route('home') }}" class="sidebar-brand">
+            <img src="{{ $siteLogoUrl }}" alt="Logo UD Rumah Daun">
+            <span><strong>UD RUMAH DAUN</strong><small>AREA KASIR</small></span>
+        </a>
+        <ul class="sidebar-nav" aria-label="Menu kasir">
             <li class="nav-item">
                 <a href="{{ route('kasir.dashboard') }}" class="nav-link {{ request()->routeIs('kasir.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('kasir.orders') }}" class="nav-link {{ request()->routeIs('kasir.orders') ? 'active' : '' }}">
-                    <i class="fas fa-shopping-bag"></i><span>Pesanan</span>
+                <a href="#" class="nav-link dropdown-toggle" aria-expanded="false" aria-controls="cashier-operations" onclick="toggleRoleSubmenu(event, 'cashier-operations')">
+                    <i class="fas fa-wrench"></i><span>Operasional</span>
+                    <i class="fas fa-chevron-right arrow" id="arrow-cashier-operations"></i>
                 </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('kasir.pos') }}" class="nav-link {{ request()->routeIs('kasir.pos*') ? 'active' : '' }}">
-                    <i class="fas fa-cash-register"></i><span>Transaksi Kasir</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('kasir.payments') }}" class="nav-link {{ request()->routeIs('kasir.payments') ? 'active' : '' }}">
-                    <i class="fas fa-money-bill-wave"></i><span>Pembayaran</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('kasir.invoices') }}" class="nav-link {{ request()->routeIs('kasir.invoices') ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice"></i><span>Invoice</span>
-                </a>
+                <ul class="submenu" id="cashier-operations">
+                    <li class="nav-item">
+                        <a href="{{ route('kasir.orders') }}" class="nav-link {{ request()->routeIs('kasir.orders') ? 'active' : '' }}">
+                            <i class="fas fa-calendar-check"></i><span>Pesanan Layanan</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('kasir.pos') }}" class="nav-link {{ request()->routeIs('kasir.pos*') ? 'active' : '' }}">
+                            <i class="fas fa-box-open"></i><span>Penjualan Produk</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('kasir.payments') }}" class="nav-link {{ request()->routeIs('kasir.payments') ? 'active' : '' }}">
+                            <i class="fas fa-money-bill-wave"></i><span>Pembayaran</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('kasir.invoices') }}" class="nav-link {{ request()->routeIs('kasir.invoices') ? 'active' : '' }}">
+                            <i class="fas fa-file-invoice"></i><span>Invoice</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="nav-item mt-3">
                 <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
@@ -113,7 +123,34 @@
             sidebar.classList.toggle('open', shouldOpen);
             backdrop.classList.toggle('show', shouldOpen);
             toggle.setAttribute('aria-expanded', String(shouldOpen));
+            toggle.setAttribute('aria-label', shouldOpen ? 'Tutup menu kasir' : 'Buka menu kasir');
+            toggle.querySelector('i').classList.toggle('fa-bars', !shouldOpen);
+            toggle.querySelector('i').classList.toggle('fa-times', shouldOpen);
         }
+
+        function toggleRoleSubmenu(event, submenuId) {
+            event.preventDefault();
+            const submenu = document.getElementById(submenuId);
+            const arrow = document.getElementById('arrow-' + submenuId);
+            const toggle = document.querySelector('[aria-controls="' + submenuId + '"]');
+            const isOpen = submenu.classList.toggle('show');
+            if (arrow) arrow.classList.toggle('rotated', isOpen);
+            if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeLink = document.querySelector('.submenu .nav-link.active');
+            const submenu = activeLink?.closest('.submenu');
+            if (submenu) {
+                submenu.classList.add('show');
+                document.querySelector('[aria-controls="' + submenu.id + '"]')?.setAttribute('aria-expanded', 'true');
+                document.getElementById('arrow-' + submenu.id)?.classList.add('rotated');
+            }
+
+            document.querySelectorAll('.sidebar a.nav-link:not(.dropdown-toggle)').forEach(link => {
+                link.addEventListener('click', () => toggleCashierSidebar(false));
+            });
+        });
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {

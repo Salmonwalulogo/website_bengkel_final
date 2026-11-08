@@ -33,15 +33,7 @@
                         <input type="datetime-local" name="payment_date" class="form-control @error('payment_date') is-invalid @enderror" value="{{ old('payment_date') }}" required>
                         @error('payment_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>Paid</option>
-                            <option value="failed" {{ old('status') == 'failed' ? 'selected' : '' }}>Failed</option>
-                            <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        </select>
-                    </div>
+                    <input type="hidden" name="status" value="paid">
                     <div class="mb-3">
                         <label class="form-label">Bukti Pembayaran</label>
                         <input type="file" name="proof_image" class="form-control @error('proof_image') is-invalid @enderror" accept="image/*">

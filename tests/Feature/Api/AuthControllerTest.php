@@ -93,6 +93,19 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
+    public function test_api_registration_rejects_passwords_shorter_than_eight_characters(): void
+    {
+        $this->postJson('/api/register', [
+            'name' => 'Short Password',
+            'email' => 'short-password@example.test',
+            'password' => '1234567',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('password');
+
+        $this->assertDatabaseMissing('users', ['email' => 'short-password@example.test']);
+    }
+
     public function test_protected_api_routes_require_a_valid_token(): void
     {
         $this->getJson('/api/bookings')->assertUnauthorized();

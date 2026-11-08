@@ -43,10 +43,14 @@
                     <div class="mb-3">
                         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
-                            <option value="pending" {{ old('status', $payment->status) === 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="paid" {{ old('status', $payment->status) === 'paid' ? 'selected' : '' }}>Paid</option>
-                            <option value="failed" {{ old('status', $payment->status) === 'failed' ? 'selected' : '' }}>Failed</option>
-                            <option value="cancelled" {{ old('status', $payment->status) === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            @if($payment->transaction?->status === 'pending')
+                                <option value="pending" {{ old('status', $payment->status) === 'pending' ? 'selected' : '' }}>Menunggu</option>
+                                <option value="paid" {{ old('status', $payment->status) === 'paid' ? 'selected' : '' }}>Lunas</option>
+                                <option value="failed" {{ old('status', $payment->status) === 'failed' ? 'selected' : '' }}>Gagal</option>
+                                <option value="cancelled" {{ old('status', $payment->status) === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                            @else
+                                <option value="{{ $payment->status }}" selected>{{ ucfirst($payment->status) }}</option>
+                            @endif
                         </select>
                         @error('status')
                             <div class="invalid-feedback">{{ $message }}</div>

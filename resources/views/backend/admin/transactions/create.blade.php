@@ -56,18 +56,7 @@
                 </table>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Status Transaksi</label>
-                        <select name="status" class="form-select">
-                            <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                            <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            <p class="text-muted">Transaksi baru berstatus menunggu. Konfirmasi pembayaran dilakukan setelah pembayaran diterima.</p>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
                 <a href="{{ route('admin.transactions.index') }}" class="btn btn-secondary">Batal</a>

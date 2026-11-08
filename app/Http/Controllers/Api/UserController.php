@@ -38,7 +38,7 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'no_hp' => ['nullable', 'string', 'max:20'],
             'role' => ['required', 'string', 'in:admin,kasir,customer'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
 
         $newUser = User::create([
@@ -60,7 +60,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'no_hp' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'string', 'min:6'],
+            'password' => ['nullable', 'string', 'min:8'],
         ]);
 
         if (isset($validated['name'])) {

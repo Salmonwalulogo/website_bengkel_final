@@ -28,7 +28,7 @@
                         <p class="text-muted mb-0">{{ $booking->user->name ?? '-' }}</p>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <strong>Kendaraan</strong>
+                        <strong>Kendaraan terkait (opsional)</strong>
                         <p class="text-muted mb-0">
                             {{ $booking->vehicle->plate_number ?? '-' }} - {{ $booking->vehicle->brand }} {{ $booking->vehicle->model }}
                         </p>
@@ -65,13 +65,13 @@
             </div>
         </div>
 
-        @if($booking->complaint)
+        @if($booking->request_details || $booking->complaint)
         <div class="card mb-4">
             <div class="card-header">
-                <i class="fas fa-exclamation-triangle me-2"></i>Keluhan Customer
+                <i class="fas fa-clipboard-list me-2"></i>Detail Permintaan
             </div>
             <div class="card-body">
-                <p class="mb-0">{{ $booking->complaint }}</p>
+                <p class="mb-0">{{ $booking->request_details ?: $booking->complaint }}</p>
             </div>
         </div>
         @endif

@@ -63,7 +63,11 @@ public final class BookingDao_Impl implements BookingDao {
         } else {
           statement.bindString(4, entity.getUserName());
         }
-        statement.bindLong(5, entity.getVehicleId());
+        if (entity.getVehicleId() == null) {
+          statement.bindNull(5);
+        } else {
+          statement.bindLong(5, entity.getVehicleId());
+        }
         if (entity.getVehiclePlate() == null) {
           statement.bindNull(6);
         } else {
@@ -110,7 +114,11 @@ public final class BookingDao_Impl implements BookingDao {
         } else {
           statement.bindString(4, entity.getUserName());
         }
-        statement.bindLong(5, entity.getVehicleId());
+        if (entity.getVehicleId() == null) {
+          statement.bindNull(5);
+        } else {
+          statement.bindLong(5, entity.getVehicleId());
+        }
         if (entity.getVehiclePlate() == null) {
           statement.bindNull(6);
         } else {
@@ -238,8 +246,12 @@ public final class BookingDao_Impl implements BookingDao {
             } else {
               _tmpUserName = _cursor.getString(_cursorIndexOfUserName);
             }
-            final long _tmpVehicleId;
-            _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            final Long _tmpVehicleId;
+            if (_cursor.isNull(_cursorIndexOfVehicleId)) {
+              _tmpVehicleId = null;
+            } else {
+              _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            }
             final String _tmpVehiclePlate;
             if (_cursor.isNull(_cursorIndexOfVehiclePlate)) {
               _tmpVehiclePlate = null;
@@ -333,8 +345,12 @@ public final class BookingDao_Impl implements BookingDao {
             } else {
               _tmpUserName = _cursor.getString(_cursorIndexOfUserName);
             }
-            final long _tmpVehicleId;
-            _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            final Long _tmpVehicleId;
+            if (_cursor.isNull(_cursorIndexOfVehicleId)) {
+              _tmpVehicleId = null;
+            } else {
+              _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            }
             final String _tmpVehiclePlate;
             if (_cursor.isNull(_cursorIndexOfVehiclePlate)) {
               _tmpVehiclePlate = null;
@@ -429,8 +445,109 @@ public final class BookingDao_Impl implements BookingDao {
             } else {
               _tmpUserName = _cursor.getString(_cursorIndexOfUserName);
             }
-            final long _tmpVehicleId;
-            _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            final Long _tmpVehicleId;
+            if (_cursor.isNull(_cursorIndexOfVehicleId)) {
+              _tmpVehicleId = null;
+            } else {
+              _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            }
+            final String _tmpVehiclePlate;
+            if (_cursor.isNull(_cursorIndexOfVehiclePlate)) {
+              _tmpVehiclePlate = null;
+            } else {
+              _tmpVehiclePlate = _cursor.getString(_cursorIndexOfVehiclePlate);
+            }
+            final long _tmpServiceId;
+            _tmpServiceId = _cursor.getLong(_cursorIndexOfServiceId);
+            final String _tmpServiceName;
+            if (_cursor.isNull(_cursorIndexOfServiceName)) {
+              _tmpServiceName = null;
+            } else {
+              _tmpServiceName = _cursor.getString(_cursorIndexOfServiceName);
+            }
+            final String _tmpBookingDate;
+            _tmpBookingDate = _cursor.getString(_cursorIndexOfBookingDate);
+            final String _tmpBookingTime;
+            _tmpBookingTime = _cursor.getString(_cursorIndexOfBookingTime);
+            final String _tmpComplaint;
+            _tmpComplaint = _cursor.getString(_cursorIndexOfComplaint);
+            final String _tmpStatus;
+            _tmpStatus = _cursor.getString(_cursorIndexOfStatus);
+            final String _tmpNotes;
+            if (_cursor.isNull(_cursorIndexOfNotes)) {
+              _tmpNotes = null;
+            } else {
+              _tmpNotes = _cursor.getString(_cursorIndexOfNotes);
+            }
+            final boolean _tmpIsSynced;
+            final int _tmp;
+            _tmp = _cursor.getInt(_cursorIndexOfIsSynced);
+            _tmpIsSynced = _tmp != 0;
+            _result = new BookingEntity(_tmpLocalId,_tmpServerId,_tmpUserId,_tmpUserName,_tmpVehicleId,_tmpVehiclePlate,_tmpServiceId,_tmpServiceName,_tmpBookingDate,_tmpBookingTime,_tmpComplaint,_tmpStatus,_tmpNotes,_tmpIsSynced);
+          } else {
+            _result = null;
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object getBookingByServerId(final long serverId,
+      final Continuation<? super BookingEntity> $completion) {
+    final String _sql = "SELECT * FROM bookings WHERE serverId = ? LIMIT 1";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    _statement.bindLong(_argIndex, serverId);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<BookingEntity>() {
+      @Override
+      @Nullable
+      public BookingEntity call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfLocalId = CursorUtil.getColumnIndexOrThrow(_cursor, "localId");
+          final int _cursorIndexOfServerId = CursorUtil.getColumnIndexOrThrow(_cursor, "serverId");
+          final int _cursorIndexOfUserId = CursorUtil.getColumnIndexOrThrow(_cursor, "userId");
+          final int _cursorIndexOfUserName = CursorUtil.getColumnIndexOrThrow(_cursor, "userName");
+          final int _cursorIndexOfVehicleId = CursorUtil.getColumnIndexOrThrow(_cursor, "vehicleId");
+          final int _cursorIndexOfVehiclePlate = CursorUtil.getColumnIndexOrThrow(_cursor, "vehiclePlate");
+          final int _cursorIndexOfServiceId = CursorUtil.getColumnIndexOrThrow(_cursor, "serviceId");
+          final int _cursorIndexOfServiceName = CursorUtil.getColumnIndexOrThrow(_cursor, "serviceName");
+          final int _cursorIndexOfBookingDate = CursorUtil.getColumnIndexOrThrow(_cursor, "bookingDate");
+          final int _cursorIndexOfBookingTime = CursorUtil.getColumnIndexOrThrow(_cursor, "bookingTime");
+          final int _cursorIndexOfComplaint = CursorUtil.getColumnIndexOrThrow(_cursor, "complaint");
+          final int _cursorIndexOfStatus = CursorUtil.getColumnIndexOrThrow(_cursor, "status");
+          final int _cursorIndexOfNotes = CursorUtil.getColumnIndexOrThrow(_cursor, "notes");
+          final int _cursorIndexOfIsSynced = CursorUtil.getColumnIndexOrThrow(_cursor, "isSynced");
+          final BookingEntity _result;
+          if (_cursor.moveToFirst()) {
+            final String _tmpLocalId;
+            _tmpLocalId = _cursor.getString(_cursorIndexOfLocalId);
+            final Long _tmpServerId;
+            if (_cursor.isNull(_cursorIndexOfServerId)) {
+              _tmpServerId = null;
+            } else {
+              _tmpServerId = _cursor.getLong(_cursorIndexOfServerId);
+            }
+            final long _tmpUserId;
+            _tmpUserId = _cursor.getLong(_cursorIndexOfUserId);
+            final String _tmpUserName;
+            if (_cursor.isNull(_cursorIndexOfUserName)) {
+              _tmpUserName = null;
+            } else {
+              _tmpUserName = _cursor.getString(_cursorIndexOfUserName);
+            }
+            final Long _tmpVehicleId;
+            if (_cursor.isNull(_cursorIndexOfVehicleId)) {
+              _tmpVehicleId = null;
+            } else {
+              _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            }
             final String _tmpVehiclePlate;
             if (_cursor.isNull(_cursorIndexOfVehiclePlate)) {
               _tmpVehiclePlate = null;
@@ -617,8 +734,12 @@ public final class BookingDao_Impl implements BookingDao {
             } else {
               _tmpUserName = _cursor.getString(_cursorIndexOfUserName);
             }
-            final long _tmpVehicleId;
-            _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            final Long _tmpVehicleId;
+            if (_cursor.isNull(_cursorIndexOfVehicleId)) {
+              _tmpVehicleId = null;
+            } else {
+              _tmpVehicleId = _cursor.getLong(_cursorIndexOfVehicleId);
+            }
             final String _tmpVehiclePlate;
             if (_cursor.isNull(_cursorIndexOfVehiclePlate)) {
               _tmpVehiclePlate = null;

@@ -8,7 +8,7 @@
     <div>
         <span class="dashboard-eyebrow"><i class="fas fa-sparkles me-2"></i>RUMAH DAUN CONTROL CENTER</span>
         <h1>Selamat datang, {{ auth()->user()->name }}!</h1>
-        <p>Kelola operasional bengkel, pantau booking, dan lihat performa bisnis hari ini.</p>
+        <p>Kelola produk, layanan dan pemesanan, pantau transaksi, serta atur informasi UD Rumah Daun.</p>
     </div>
     <a href="{{ route('admin.reports.index') }}" class="dashboard-hero-action">
         <i class="fas fa-chart-line me-2"></i>Lihat Laporan
@@ -57,7 +57,7 @@
 
 <!-- Welcome Alert -->
 <div class="quick-actions mb-4">
-    <a href="{{ route('admin.bookings.create') }}"><i class="fas fa-calendar-plus"></i><span>Booking Baru</span><small>Tambah layanan</small></a>
+    <a href="{{ route('admin.bookings.create') }}"><i class="fas fa-calendar-plus"></i><span>Booking Baru</span><small>Catat pemesanan layanan</small></a>
     <a href="{{ route('admin.products.create') }}"><i class="fas fa-box-open"></i><span>Tambah Produk</span><small>Kelola katalog</small></a>
     <a href="{{ route('admin.users.create') }}"><i class="fas fa-user-plus"></i><span>Tambah User</span><small>Atur akses akun</small></a>
     <a href="{{ route('admin.reports.index') }}"><i class="fas fa-file-export"></i><span>Export Laporan</span><small>Ringkasan bisnis</small></a>
@@ -94,11 +94,11 @@
                 <i class="fas fa-receipt me-2"></i>Transaksi Terbaru
             </div>
             <div class="card-body">
-                @forelse(\App\Models\Transaction::with('user')->latest()->take(5)->get() as $trx)
+                @forelse(\App\Models\Transaction::with(['user', 'customer', 'booking.service'])->latest()->take(5)->get() as $trx)
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                     <div>
                         <div class="fw-bold">{{ $trx->invoice_number }}</div>
-                        <small class="text-muted">{{ $trx->user->name ?? '-' }}</small>
+                        <small class="text-muted">{{ $trx->customer->name ?? $trx->user->name ?? '-' }} · {{ $trx->booking->service->name ?? 'Produk' }}</small>
                     </div>
                     <div class="text-end">
                         <div class="fw-bold">Rp {{ number_format($trx->total_payment, 0, ',', '.') }}</div>

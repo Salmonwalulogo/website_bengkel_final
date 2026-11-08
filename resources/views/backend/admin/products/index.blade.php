@@ -10,7 +10,7 @@
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover">
-                <thead><tr><th>Foto</th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Stok</th><th>Status</th><th class="text-center">Aksi</th></tr></thead>
+                <thead><tr><th>Foto</th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Stok</th><th>Status</th><th>Katalog</th><th class="text-center">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($products as $prod)
                     <tr>
@@ -20,14 +20,17 @@
                         <td>Rp {{ number_format($prod->harga, 0, ',', '.') }}</td>
                         <td>{{ $prod->stok }}</td>
                         <td><span class="badge {{ $prod->status == 'active' ? 'bg-success' : 'bg-danger' }}">{{ ucfirst($prod->status) }}</span></td>
+                        <td>{{ ['public' => 'Publik', 'customer' => 'Customer', 'both' => 'Publik dan Customer'][$prod->visibility] ?? 'Publik dan Customer' }}</td>
                         <td class="text-center">
                             <a href="{{ route('admin.products.show', $prod) }}" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
                             <a href="{{ route('admin.products.edit', $prod) }}" class="btn-action btn-edit"><i class="fas fa-edit"></i></a>
-                            <form action="{{ route('admin.products.destroy', $prod) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus produk ini?');">@csrf @method('DELETE')<button type="submit" class="btn-action btn-delete"><i class="fas fa-trash"></i></button></form>
+                            @if($prod->status === 'active')
+                                <form action="{{ route('admin.products.destroy', $prod) }}" method="POST" class="d-inline" onsubmit="return confirm('Nonaktifkan produk ini? Data produk dan riwayat penjualan akan tetap tersimpan.');">@csrf @method('DELETE')<button type="submit" class="btn-action btn-delete" title="Nonaktifkan produk" aria-label="Nonaktifkan {{ $prod->name }}"><i class="fas fa-ban"></i></button></form>
+                            @endif
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center text-muted">Belum ada produk</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">Belum ada produk</td></tr>
                     @endforelse
                 </tbody>
             </table>
