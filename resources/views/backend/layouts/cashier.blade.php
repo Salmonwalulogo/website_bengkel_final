@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    @include('components.favicon')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -8,7 +9,7 @@
     <title>@yield('title', 'Kasir Dashboard') - UD Rumah Daun</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @vite('resources/css/backend/backend.css')
@@ -21,6 +22,7 @@
 </head>
 <body class="backend-page" data-user-role="{{ auth()->user()->role }}" data-authenticated="true">
     <div class="sidebar" id="cashier-sidebar">
+        @php($pendingPaymentsCount = \App\Models\Payment::query()->where('status', 'pending')->count())
         <a href="{{ route('home') }}" class="sidebar-brand">
             <img src="{{ $siteLogoUrl }}" alt="Logo UD Rumah Daun">
             <span><strong>UD RUMAH DAUN</strong><small>AREA KASIR</small></span>
@@ -50,6 +52,9 @@
                     <li class="nav-item">
                         <a href="{{ route('kasir.payments') }}" class="nav-link {{ request()->routeIs('kasir.payments') ? 'active' : '' }}">
                             <i class="fas fa-money-bill-wave"></i><span>Pembayaran</span>
+                            @if($pendingPaymentsCount > 0)
+                                <span class="badge rounded-pill bg-warning text-dark ms-1" aria-label="{{ $pendingPaymentsCount }} pembayaran menunggu konfirmasi">{{ $pendingPaymentsCount }}</span>
+                            @endif
                         </a>
                     </li>
                     <li class="nav-item">

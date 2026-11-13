@@ -25,7 +25,10 @@ class AuthController extends Controller
             ]);
         }
 
-        $credentials = ['password' => $request->password];
+        $credentials = [
+            'password' => $request->password,
+            'is_active' => true,
+        ];
 
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
             $credentials['email'] = $identifier;

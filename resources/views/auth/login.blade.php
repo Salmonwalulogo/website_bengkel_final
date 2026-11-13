@@ -1,6 +1,6 @@
-    @vite('resources/css/auth-pages/login.css')
 <x-guest-layout>
-<div class="auth-card-header"><div class="auth-kicker">Ruang pelanggan</div><h2>Selamat datang kembali</h2><p>Masuk untuk memesan layanan dan memantau pesanan Anda.</p></div>
+    <a class="auth-home-link" href="{{ url('/') }}"><span aria-hidden="true">&larr;</span> Kembali ke beranda</a>
+<div class="auth-card-header"><div class="auth-kicker">Ruang Login</div><h2>Selamat datang</h2><p>Masuk untuk mengakses akun Anda.</p></div>
 <x-auth-session-status class="auth-status" :status="session('status')" />
 @if(session('error'))<div class="auth-alert page-style-1">{{ session('error') }}</div>@endif
 @if($errors->any())<div class="auth-alert page-style-1" >Periksa kembali email/username dan password Anda.</div>@endif

@@ -9,12 +9,15 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $notifications = Notification::with('user')
-                                    ->latest()
-                                    ->paginate(15);
-        return view('backend.admin.notifications.index', compact('notifications'));
+        $notifications = $request->user()->notifications()
+            ->with('user')
+            ->latest()
+            ->paginate(15);
+        $unreadNotificationCount = $request->user()->notifications()->unread()->count();
+
+        return view('backend.admin.notifications.index', compact('notifications', 'unreadNotificationCount'));
     }
 
     public function create()
@@ -38,17 +41,31 @@ class NotificationController extends Controller
             ->with('success', 'Notifikasi berhasil dikirim.');
     }
 
-    public function markAsRead($id)
+    public function markAsRead(Request $request, $id)
     {
-        $notification = Notification::findOrFail($id);
+        $notification = $request->user()->notifications()->whereKey($id)->firstOrFail();
         $notification->update(['is_read' => true]);
 
         return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
     }
 
-    public function destroy($id)
+    public function markAllAsRead(Request $request)
     {
-        $notification = Notification::findOrFail($id);
+        $updatedCount = $request->user()->notifications()
+            ->unread()
+            ->update(['is_read' => true]);
+
+        return back()->with(
+            'success',
+            $updatedCount > 0
+                ? 'Semua notifikasi telah ditandai sudah dibaca.'
+                : 'Tidak ada notifikasi baru.'
+        );
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $notification = $request->user()->notifications()->whereKey($id)->firstOrFail();
         $notification->delete();
 
         return back()->with('success', 'Notifikasi dihapus.');

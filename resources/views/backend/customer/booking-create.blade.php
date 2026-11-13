@@ -3,11 +3,17 @@
 @section('title', 'Pesan Layanan')
 
 @section('content')
+@php($selectedServiceModel = $services->firstWhere('id', (int) old('service_id', $selectedService)))
 <div class="container-fluid">
-    <div class="mb-4">
-        <span class="dashboard-eyebrow text-success">AREA PELANGGAN</span>
-        <h1 class="h2 mb-1">Pesan Jasa &amp; Layanan</h1>
-        <p class="text-muted mb-0">Pilih layanan apa pun, sampaikan detail kebutuhan, dan tunggu admin mengonfirmasi jadwal serta ketersediaan.</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <span class="dashboard-eyebrow text-success">AREA PELANGGAN</span>
+            <h1 class="h2 mb-1">Pesan Jasa &amp; Layanan</h1>
+            <p class="text-muted mb-0">Pilih layanan apa pun, sampaikan detail kebutuhan, dan tunggu admin mengonfirmasi jadwal serta ketersediaan.</p>
+        </div>
+        <a href="{{ route('customer.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>Kembali
+        </a>
     </div>
     <div class="card booking-flow-card"><div class="card-body p-4 p-lg-5">
         @if($services->isEmpty())
@@ -15,7 +21,7 @@
                 <span class="booking-empty-icon"><i class="fas fa-concierge-bell"></i></span>
                 <h2 class="h5">Belum ada layanan aktif</h2>
                 <p class="text-muted mb-3">Silakan coba lagi nanti atau hubungi tim UD Rumah Daun.</p>
-                <a href="{{ route('layanan') }}" class="btn btn-outline-success">Lihat layanan</a>
+                <a href="{{ route('customer.services') }}" class="btn btn-outline-success">Lihat layanan</a>
             </div>
         @else
         <form action="{{ route('customer.booking.store') }}" method="POST">
@@ -39,6 +45,7 @@
                                     id="service-{{ $service->id }}"
                                     name="service_id"
                                     value="{{ $service->id }}"
+                                    data-automotive="{{ $service->isAutomotive() ? 'true' : 'false' }}"
                                     @checked((string) old('service_id', $selectedService) === (string) $service->id)
                                     required
                                 >
@@ -83,7 +90,7 @@
                         <input id="booking_time" type="time" name="booking_time" value="{{ old('booking_time') }}" class="form-control @error('booking_time') is-invalid @enderror" required>
                         @error('booking_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-12">
+                    <div class="col-12" data-service-vehicle-fields @unless($selectedServiceModel?->isAutomotive()) hidden @endunless>
                         <label for="vehicle_id" class="form-label">Kendaraan (opsional)</label>
                         <select id="vehicle_id" name="vehicle_id" class="form-select @error('vehicle_id') is-invalid @enderror">
                             <option value="">Tidak terkait kendaraan</option>
@@ -114,3 +121,30 @@
     </div></div>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (() => {
+            const serviceRadios = document.querySelectorAll('input[name="service_id"]');
+            const vehicleFields = document.querySelector('[data-service-vehicle-fields]');
+            const vehicleSelect = vehicleFields?.querySelector('[name="vehicle_id"]');
+
+            const updateVehicleField = () => {
+                if (!vehicleFields) {
+                    return;
+                }
+
+                const selectedService = Array.from(serviceRadios).find((radio) => radio.checked);
+                const showVehicle = selectedService?.dataset.automotive === 'true';
+                vehicleFields.hidden = !showVehicle;
+
+                if (!showVehicle && vehicleSelect) {
+                    vehicleSelect.value = '';
+                }
+            };
+
+            serviceRadios.forEach((radio) => radio.addEventListener('change', updateVehicleField));
+            updateVehicleField();
+        })();
+    </script>
+@endpush

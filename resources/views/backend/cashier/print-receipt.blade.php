@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    @include('components.favicon')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Struk {{ $transaction->receipt_number }}</title>
@@ -38,7 +39,7 @@
         <section class="details">
             <div><span>Invoice</span><strong>{{ $transaction->invoice_number }}</strong></div>
             <div><span>No. struk</span><strong>{{ $transaction->receipt_number }}</strong></div>
-            <div><span>Tanggal</span><strong>{{ $transaction->created_at->format('d/m/Y H:i') }}</strong></div>
+            <div><span>Tanggal cetak</span><strong id="printed-at">{{ $transaction->created_at->format('d/m/Y H:i') }}</strong></div>
             <div><span>Kasir</span><strong>{{ $transaction->user->name }}</strong></div>
             <div><span>Pelanggan</span><strong>{{ $transaction->customer?->name ?? 'Pelanggan umum' }}</strong></div>
         </section>
@@ -83,5 +84,19 @@
         <button type="button" onclick="window.print()">Cetak struk</button>
         <a href="{{ route('kasir.invoices') }}">Kembali ke invoice</a>
     </div>
+    <script>
+        const updatePrintedAt = () => {
+            const now = new Date();
+            const pad = value => String(value).padStart(2, '0');
+            document.getElementById('printed-at').textContent =
+                `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        };
+
+        window.addEventListener('beforeprint', updatePrintedAt);
+        window.addEventListener('load', () => {
+            updatePrintedAt();
+            window.print();
+        }, { once: true });
+    </script>
 </body>
 </html>

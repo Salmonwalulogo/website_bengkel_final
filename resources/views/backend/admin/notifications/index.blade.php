@@ -3,11 +3,22 @@
 @section('title', 'Notifikasi')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0"><i class="fas fa-bell me-2"></i>Notifikasi</h2>
-    <a href="{{ route('admin.notifications.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Kirim Notifikasi
-    </a>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h2 class="mb-1"><i class="fas fa-bell me-2"></i>Notifikasi</h2>
+        <small class="text-muted">{{ $unreadNotificationCount }} belum dibaca</small>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <form action="{{ route('admin.notifications.markAllAsRead') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-outline-success" @disabled($unreadNotificationCount === 0)>
+                <i class="fas fa-check-double me-2" aria-hidden="true"></i>Tandai semua dibaca
+            </button>
+        </form>
+        <a href="{{ route('admin.notifications.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Kirim Notifikasi
+        </a>
+    </div>
 </div>
 
 <div class="card">

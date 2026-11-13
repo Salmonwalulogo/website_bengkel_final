@@ -124,7 +124,15 @@ if (posPage) {
     document.addEventListener('keydown', (event) => { if (event.key === 'F2') { event.preventDefault(); searchInput.focus(); } if (event.key === 'F4') { event.preventDefault(); paidInput.focus(); } if (event.key === 'Escape') $('#cancel-transaction').click(); });
     $('#transaction-number').textContent = posPage.dataset.transactionNumber;
     $('#pos-form').addEventListener('submit', () => { payButton.disabled = true; payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>MEMPROSES...'; });
-    setInterval(() => { $('#live-clock').textContent = new Intl.DateTimeFormat('id-ID', { dateStyle: 'short', timeStyle: 'medium' }).format(new Date()); }, 1000);
+    const updateClocks = () => {
+        const now = new Date();
+        const currentTime = new Intl.DateTimeFormat('id-ID', { dateStyle: 'short', timeStyle: 'medium' }).format(now);
+        $('#live-clock').textContent = currentTime;
+        const receiptPrintedAt = $('#receipt-printed-at');
+        if (receiptPrintedAt) receiptPrintedAt.textContent = currentTime;
+    };
+    updateClocks();
+    setInterval(updateClocks, 1000);
     renderProducts(); renderCart();
     syncProducts();
     setInterval(syncProducts, 5000);

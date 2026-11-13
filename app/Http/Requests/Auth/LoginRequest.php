@@ -46,7 +46,11 @@ class LoginRequest extends FormRequest
             ? 'email' 
             : 'username';
 
-        if (! Auth::attempt([$loginField => $this->input('email'), 'password' => $this->input('password')], $this->boolean('remember'))) {
+        if (! Auth::attempt([
+            $loginField => $this->input('email'),
+            'password' => $this->input('password'),
+            'is_active' => true,
+        ], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

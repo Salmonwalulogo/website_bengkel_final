@@ -38,7 +38,7 @@ class TransactionController extends Controller
                 'required',
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'customer')),
             ],
-            'payment_method' => 'required|in:cash,qris,debit,kredit,ewallet,transfer',
+            'payment_method' => 'required|in:cash,qris,ewallet,transfer',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:0',
@@ -126,16 +126,12 @@ class TransactionController extends Controller
     )
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,completed,cancelled',
+            'status' => 'required|in:cancelled',
         ]);
 
-        if ($validated['status'] === 'cancelled') {
-            $lifecycle->cancel($transaction);
-        } else {
-            $lifecycle->markPaid($transaction);
-        }
+        $lifecycle->cancel($transaction);
 
-        return back()->with('success', 'Status pesanan berhasil diperbarui.');
+        return back()->with('success', 'Pesanan berhasil dibatalkan.');
     }
 
 }

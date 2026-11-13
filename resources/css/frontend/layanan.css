@@ -1,9 +1,9 @@
 :root {
-            --primary: #ff6b35;
-            --secondary: #1e3a5f;
-            --dark: #0f172a;
+            --primary: #e7ad3d;
+            --secondary: #176e6a;
+            --dark: #102f35;
         }
-        body { font-family: 'Poppins', sans-serif; background: #f8fafc; }
+        body { font-family: 'Manrope', sans-serif; background: #f3f8f6; }
         .navbar {
             background: var(--dark);
             padding: 15px 0;
@@ -41,6 +41,10 @@
             color: white;
             text-align: center;
         }
+        .service-back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+        }
         .page-header h1 {
             font-size: 3rem;
             font-weight: 900;
@@ -59,12 +63,12 @@
         }
         .service-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(255,107,53,0.2);
+            box-shadow: 0 15px 40px rgba(23,110,106,0.16);
         }
         .service-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, var(--primary), #f7931e);
+            background: linear-gradient(135deg, var(--secondary), #0d5e5a);
             border-radius: 50%;
             display: flex;
             align-items: center;

@@ -48,12 +48,6 @@
                             <form action="{{ route('admin.transactions.updateStatus', $trx) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="status" value="completed">
-                                <button type="submit" class="btn-action btn-edit" title="Konfirmasi pembayaran"><i class="fas fa-check"></i></button>
-                            </form>
-                            <form action="{{ route('admin.transactions.updateStatus', $trx) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('PATCH')
                                 <input type="hidden" name="status" value="cancelled">
                                 <button type="submit" class="btn-action btn-delete" title="Batalkan pesanan"><i class="fas fa-times"></i></button>
                             </form>

@@ -3,11 +3,9 @@
 @section('title', 'Pembayaran')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <h2 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Pembayaran</h2>
-    <a href="{{ route('admin.payments.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Tambah Pembayaran
-    </a>
+    <span class="text-muted small">Pemantauan pembayaran</span>
 </div>
 
 <div class="card">
@@ -19,10 +17,10 @@
                         <th>ID</th>
                         <th>Kode</th>
                         <th>Transaksi</th>
+                        <th>Pelanggan</th>
                         <th>Jumlah</th>
                         <th>Status</th>
                         <th>Tanggal</th>
-                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,7 +28,8 @@
                     <tr>
                         <td><strong>#{{ $payment->id }}</strong></td>
                         <td><code>{{ $payment->payment_code }}</code></td>
-                        <td>{{ $payment->transaction->invoice_number ?? '-' }}</td>
+                        <td>{{ $payment->transaction?->invoice_number ?? '-' }}</td>
+                        <td>{{ $payment->transaction?->customer?->name ?? $payment->transaction?->user?->name ?? 'Pelanggan umum' }}</td>
                         <td class="fw-bold">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
                         <td>
                             @php
@@ -45,11 +44,6 @@
                             <span class="badge {{ $badgeClass }}">{{ ucfirst($payment->status) }}</span>
                         </td>
                         <td>{{ $payment->payment_date ? $payment->payment_date->format('d/m/Y H:i') : '-' }}</td>
-                        <td class="text-center">
-                            <a href="{{ route('admin.payments.edit', $payment) }}" class="btn-action btn-edit" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </td>
                     </tr>
                     @empty
                     <tr>

@@ -94,7 +94,10 @@ class ProductVisibilityTest extends TestCase
 
         $customer = User::factory()->create(['role' => 'customer']);
         $this->actingAs($customer)
-            ->post(route('cart.add', $product), ['quantity' => 1])
+            ->post(route('cart.add', $product), [
+                'quantity' => 1,
+                'vehicle_brand' => 'Honda Vario',
+            ])
             ->assertRedirect()
             ->assertSessionHas('cart', [$product->id => 1]);
     }

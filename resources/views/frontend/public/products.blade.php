@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    @include('components.favicon')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Produk - Web Bengkel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet">
     
     @vite('resources/css/frontend/products.css')
 </head>
@@ -14,10 +17,10 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="fas fa-tools"></i> Web Bengkel
+                <i class="fas fa-leaf"></i> UD Rumah Daun
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ route('home') }}">Home</a>
+                <a class="nav-link" href="{{ route('home') }}">Beranda</a>
                 <a class="nav-link active" href="{{ route('public.products') }}">Produk</a>
                 <a class="nav-link" href="{{ route('public.services') }}">Layanan</a>
                 <a class="nav-link" href="{{ route('about') }}">Tentang</a>
@@ -25,7 +28,6 @@
                     <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                 @else
                     <a class="nav-link" href="{{ route('login') }}">Login</a>
-                    <a class="nav-link" href="{{ route('register') }}">Register</a>
                 @endauth
             </div>
         </div>

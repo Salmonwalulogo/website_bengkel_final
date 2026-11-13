@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    @include('components.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UD Rumah Daun | Beragam Jasa dan Layanan</title>
@@ -8,7 +9,8 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     @vite('resources/css/frontend/frontend.css')
     @vite('resources/css/frontend/home.css')
@@ -29,7 +31,7 @@
                         </div>
                         <h1>
                             UD Rumah Daun
-                            <span>                            Beragam jasa, produk, sewa, dan layanan untuk Anda</span>
+                            <span>Beragam jasa, produk, sewa, dan layanan untuk Anda</span>
                         </h1>
                         <p>
                             Jelajahi berbagai jasa dan layanan UD Rumah Daun. Kirim permintaan melalui website dan pantau konfirmasinya dari akun pelanggan Anda.
@@ -43,9 +45,9 @@
                                 <i class="bi bi-cart3"></i>
                                 Lihat Produk
                             </a>
-                            <a href="{{ route('layanan') }}" class="btn-hero btn-secondary-hero">
-                                <i class="bi bi-tools"></i>
-                                Layanan Kami
+                            <a href="{{ route('kontak') }}" class="btn-hero btn-secondary-hero">
+                                <i class="bi bi-chat-dots"></i>
+                                Hubungi Kami
                             </a>
                         </div>
                     </div>
@@ -213,13 +215,13 @@
                     <h3>UD Rumah Daun</h3>
                     <p class="location-address">
                         <i class="bi bi-geo-alt-fill"></i>
-                        Desa Menia, Kecamatan Sabu Barat, Kabupaten Sabu Raijua, Nusa Tenggara Timur, Indonesia
+                        Jl. Trans Seba-Bolou, Menia, Kecamatan Sabu Barat, Kabupaten Sabu Raijua, Nusa Tenggara Timur 85391, Indonesia
                     </p>
                     <p class="location-hours">
                         <i class="bi bi-clock-fill"></i>
                         Senin - Sabtu, 08:00 - 17:00
                     </p>
-                    <a href="https://www.google.com/maps/search/?api=1&query=Desa+Menia%2C+Kecamatan+Sabu+Barat%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur%2C+Indonesia"
+                    <a href="https://www.google.com/maps/search/?api=1&query=Rumah+Daun%2C+Jl.+Trans+Seba-Bolou%2C+Menia%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur+85391%2C+Indonesia"
                        class="btn-location" target="_blank" rel="noopener noreferrer">
                         <i class="bi bi-sign-turn-right-fill"></i>
                         Buka di Google Maps
@@ -227,7 +229,7 @@
                 </div>
                 <div class="location-map" data-aos="fade-left">
                     <iframe
-                        src="https://www.google.com/maps?q=Desa+Menia%2C+Kecamatan+Sabu+Barat%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur%2C+Indonesia&output=embed"
+                        src="https://www.google.com/maps?q=Rumah+Daun%2C+Jl.+Trans+Seba-Bolou%2C+Menia%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur+85391%2C+Indonesia&z=17&output=embed"
                         title="Peta lokasi UD Rumah Daun"
                         loading="lazy"
                         referrerpolicy="no-referrer-when-downgrade"
@@ -243,7 +245,7 @@
             <div data-aos="zoom-in">
                 <h2>Siap Untuk Kebutuhan Anda?</h2>
                 <p>Hubungi UD Rumah Daun untuk kebutuhan jasa, produk, dan konsultasi yang cepat, aman, dan sesuai kebutuhan Anda.</p>
-                <a href="https://wa.me/6285165021473" class="btn-cta" target="_blank">
+                <a href="https://wa.me/6285165021473" class="btn-cta" target="_blank" rel="noopener noreferrer">
                     <i class="bi bi-whatsapp"></i>
                     Hubungi Kami Sekarang
                 </a>
@@ -268,7 +270,7 @@
                 <div class="footer-bottom">
                     <p>&copy; {{ date('Y') }} UD Rumah Daun. Dikelola dengan semangat pelayanan dan kepercayaan pelanggan.</p>
                     <p class="contact-note">
-                        <i class="bi bi-geo-alt me-2"></i>Jl. Trans Seba-Bolou, Menia, Kec. Sabu Bar., Kabupaten Sabu Raijua, Nusa Tenggara Tim. 85391, Indonesia
+                        <i class="bi bi-geo-alt me-2"></i>Jl. Trans Seba-Bolou, Menia, Kecamatan Sabu Barat, Kabupaten Sabu Raijua, Nusa Tenggara Timur 85391, Indonesia
                         <span class="mx-3">|</span>
                         <i class="bi bi-telephone me-2"></i>+62 851-6502-1473
                     </p>

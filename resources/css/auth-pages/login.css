@@ -1,4 +1,27 @@
 
-
+.auth-home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+    padding: 8px 12px;
+    border: 1px solid #e9e5db;
+    border-radius: 999px;
+    color: #176e6a;
+    background: #fbfaf7;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+}
+.auth-home-link:hover {
+    border-color: #e7ad3d;
+    color: #102f35;
+    background: #f6f1e5;
+}
+.auth-home-link:focus-visible {
+    outline: 3px solid rgba(23, 110, 106, 0.3);
+    outline-offset: 2px;
+}
 .page-style-1 { margin-top:14px; }
 .page-style-2 { width:100%; margin-top:22px; }

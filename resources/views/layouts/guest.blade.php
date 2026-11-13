@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    @include('components.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ request()->routeIs('register') ? 'Daftar' : (request()->routeIs('password.*') ? 'Pemulihan Akun' : 'Masuk') }} - {{ config('app.name', 'UD Rumah Daun') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=outfit:400,500,600,700,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet">
+    @if (request()->routeIs('login'))
+        @vite('resources/css/auth-pages/login.css')
+    @endif
     @vite(['resources/css/auth.css', 'resources/js/app.js'])
 </head>
 <body>

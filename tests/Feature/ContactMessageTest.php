@@ -12,6 +12,16 @@ class ContactMessageTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_contact_page_shows_the_business_address_and_google_maps_link(): void
+    {
+        $this->get(route('kontak'))
+            ->assertOk()
+            ->assertSee('Jl. Trans Seba-Bolou, Menia')
+            ->assertSee('Kabupaten Sabu Raijua')
+            ->assertSee('Lihat Lokasi di Google Maps')
+            ->assertSee('https://www.google.com/maps/search/?api=1&amp;query=Rumah+Daun%2C+Jl.+Trans+Seba-Bolou%2C+Menia%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur+85391%2C+Indonesia', false);
+    }
+
     public function test_contact_message_is_saved_and_emailed(): void
     {
         Mail::fake();

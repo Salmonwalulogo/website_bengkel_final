@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    @include('components.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produk - UD Rumah Daun</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet">
 
     @vite('resources/css/frontend/frontend.css')
     @vite('resources/css/frontend/produk.css')
@@ -31,8 +34,12 @@
             @if(session('error'))
                 <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
             @endif
+            @if($errors->any())
+                <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
+            @endif
             <div class="row">
                 @forelse($products as $product)
+                @php($remainingStock = max(0, (int) $product->stok - (int) (session('cart', [])[$product->id] ?? 0)))
                 <div class="col-md-4">
                     <div class="product-card">
                         <div class="product-image">
@@ -53,11 +60,9 @@
                                 <a class="btn-order text-center text-decoration-none" target="_blank" rel="noopener noreferrer" href="https://wa.me/6285165021473?text={{ urlencode('Halo UD Rumah Daun, saya ingin bertanya tentang ' . $product->name) }}">
                                     <i class="bi bi-whatsapp me-2"></i>Tanya Produk
                                 </a>
-                                <form action="{{ route('cart.add', $product) }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button class="btn btn-outline-dark w-100" type="submit" @disabled($product->stok < 1)><i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang</button>
-                                </form>
+                                <button class="btn btn-outline-dark w-100" type="button" data-bs-toggle="modal" data-bs-target="#add-to-cart-{{ $product->id }}" @disabled($remainingStock < 1)>
+                                    <i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang
+                                </button>
                                 @if($product->stok > 0)
                                     @auth
                                         @if(auth()->user()->role === 'customer')
@@ -70,6 +75,7 @@
                             </div>
                         </div>
                     </div>
+                    @include('frontend.partials.add-to-cart-modal', ['product' => $product, 'vehicles' => $vehicles])
                 </div>
                 @empty
                 <div class="col-12 text-center py-5">

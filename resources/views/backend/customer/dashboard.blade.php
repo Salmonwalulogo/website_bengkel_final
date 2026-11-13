@@ -11,7 +11,7 @@
             <p>Belanja produk, pesan berbagai layanan, dan pantau status permintaan serta pembayaran Anda.</p>
         </div>
         <div class="customer-dashboard-actions">
-            <a href="{{ route('layanan') }}" class="dashboard-hero-action"><i class="fas fa-concierge-bell me-2"></i>Lihat Layanan</a>
+            <a href="{{ route('customer.services') }}" class="dashboard-hero-action"><i class="fas fa-concierge-bell me-2"></i>Lihat Layanan</a>
             <a href="{{ route('customer.booking.create') }}" class="dashboard-hero-action customer-whatsapp-action"><i class="fas fa-calendar-plus me-2"></i>Pesan Sekarang</a>
         </div>
     </div>

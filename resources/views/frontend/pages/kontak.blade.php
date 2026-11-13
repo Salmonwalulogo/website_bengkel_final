@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    @include('components.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kontak - UD Rumah Daun</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet">
     @vite('resources/css/frontend/frontend.css')
     @vite('resources/css/frontend/kontak.css')
     @vite('resources/css/frontend/navigation.css')
@@ -32,7 +35,10 @@
                             </div>
                             <div>
                                 <h3>Alamat</h3>
-                                <p>Desa Menia<br>Kecamatan Sabu Barat, Kabupaten Sabu Raijua<br>Nusa Tenggara Timur, Indonesia</p>
+                                <p>Jl. Trans Seba-Bolou, Menia<br>Kecamatan Sabu Barat, Kabupaten Sabu Raijua<br>Nusa Tenggara Timur 85391, Indonesia</p>
+                                <a class="btn btn-outline-success btn-sm mt-2" href="https://www.google.com/maps/search/?api=1&amp;query=Rumah+Daun%2C+Jl.+Trans+Seba-Bolou%2C+Menia%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur+85391%2C+Indonesia" target="_blank" rel="noopener noreferrer">
+                                    <i class="bi bi-map me-1" aria-hidden="true"></i>Lihat Lokasi di Google Maps
+                                </a>
                             </div>
                         </div>
                         <div class="contact-item">

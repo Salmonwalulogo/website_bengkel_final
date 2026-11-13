@@ -1,18 +1,18 @@
 :root {
             --sidebar-width: 250px;
-            --primary-color: #1cc88a;
+            --primary-color: #176e6a;
         }
         
         body {
-            font-family: 'Figtree', sans-serif;
-            background-color: #f8f9fc;
+            font-family: 'Manrope', sans-serif;
+            background-color: #f3f8f6;
             overflow-x: hidden;
         }
         
         .sidebar {
             width: var(--sidebar-width);
             min-height: 100vh;
-            background: linear-gradient(180deg, #1cc88a 10%, #13855c 100%);
+            background: linear-gradient(180deg, #176e6a 10%, #0d5e5a 100%);
             position: fixed;
             left: 0;
             top: 0;
@@ -21,7 +21,7 @@
             overflow-y: auto;
         }
         .backend-page .sidebar {
-            background: linear-gradient(180deg, #14263d 0%, #0e1a2c 100%);
+            background: linear-gradient(180deg, #102f35 0%, #0d272c 100%);
         }
         
         .sidebar-brand {
@@ -37,7 +37,7 @@
             text-decoration: none;
         }
         .sidebar-brand strong { font-size: .78rem; letter-spacing: .04em; }
-        .sidebar-brand small { color: #d8c18a; font-size: .6rem; letter-spacing: .12em; }
+        .sidebar-brand small { color: #e7ad3d; font-size: .6rem; letter-spacing: .12em; }
         
         .sidebar-nav {
             padding: 0;
@@ -107,7 +107,7 @@
             display: none;
             border: 0;
             background: #e1f8ee;
-            color: #13855c;
+            color: #0d5e5a;
             width: 40px;
             height: 40px;
             border-radius: 10px;

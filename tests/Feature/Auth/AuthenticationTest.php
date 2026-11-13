@@ -4,6 +4,8 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -14,7 +16,9 @@ class AuthenticationTest extends TestCase
     {
         $response = $this->get('/login');
 
-        $response->assertStatus(200);
+        $response->assertOk()
+            ->assertSee('Kembali ke beranda')
+            ->assertSee('href="' . url('/') . '"', false);
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
@@ -50,6 +54,21 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_expired_csrf_token_during_logout_redirects_to_login(): void
+    {
+        Route::middleware('web')->post('/logout', function () {
+            throw new TokenMismatchException('CSRF token mismatch.');
+        })->name('logout');
+
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/logout');
+
+        $this->assertGuest();
+        $response->assertRedirect(route('login', absolute: false));
+        $response->assertSessionHas('error', 'Sesi Anda sudah kedaluwarsa. Silakan login kembali.');
     }
 
 }

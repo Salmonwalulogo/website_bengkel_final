@@ -1,12 +1,12 @@
 :root {
-    --primary: #ff6b35;
-    --secondary: #1e3a5f;
-    --dark: #0f172a;
+    --primary: #e7ad3d;
+    --secondary: #176e6a;
+    --dark: #102f35;
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background: #f8fafc;
+    font-family: 'Manrope', sans-serif;
+    background: #f3f8f6;
 }
 
 .navbar {
@@ -125,7 +125,7 @@ body {
     padding: 14px 18px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Manrope', sans-serif;
     transition: all 0.3s;
 }
 
@@ -149,7 +149,7 @@ body {
 
 .btn-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+    box-shadow: 0 10px 30px rgba(23, 110, 106, 0.24);
 }
 
 .contact-footer {

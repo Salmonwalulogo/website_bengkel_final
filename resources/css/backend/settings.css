@@ -1,12 +1,12 @@
 body { background: #f5f8f7; color: #17242f; }
         .settings-shell { max-width: 1040px; margin: 0 auto; padding: 34px 18px 60px; }
         .settings-top { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 28px; }
-        .brand { color: #075e5b; font-weight: 800; letter-spacing: .08em; text-decoration: none; }
+        .brand { color: #0d5e5a; font-weight: 800; letter-spacing: .08em; text-decoration: none; }
         .settings-card { border: 0; border-radius: 18px; box-shadow: 0 12px 30px rgba(20, 64, 61, .08); }
-        .avatar { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; background: #d9eee9; display: grid; place-items: center; color: #08736e; font-size: 2rem; font-weight: 800; }
+        .avatar { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; background: #d9eee9; display: grid; place-items: center; color: #176e6a; font-size: 2rem; font-weight: 800; }
         .form-label { font-weight: 600; color: #43545d; }
-        .form-control:focus { border-color: #0e817b; box-shadow: 0 0 0 .2rem rgba(14,129,123,.13); }
-        .btn-primary { background: #0e817b; border-color: #0e817b; }
-        .btn-primary:hover { background: #075e5b; border-color: #075e5b; }
+        .form-control:focus { border-color: #176e6a; box-shadow: 0 0 0 .2rem rgba(23,110,106,.13); }
+        .btn-primary { background: #176e6a; border-color: #176e6a; }
+        .btn-primary:hover { background: #0d5e5a; border-color: #0d5e5a; }
         .section-title { font-weight: 800; }
         .muted { color: #71818a; }

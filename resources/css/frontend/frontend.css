@@ -11,6 +11,7 @@
     color: var(--frontend-ink);
     background: var(--frontend-paper);
     overflow-x: hidden;
+    font-family: "Manrope", sans-serif;
 }
 .frontend-page a {
     transition:

@@ -44,7 +44,15 @@ class AdminSiteBrandingTest extends TestCase
 
         $this->assertNotEmpty($firstLogo);
         Storage::disk('public')->assertExists($firstLogo);
-        $this->get(route('home'))->assertOk()->assertSee('storage/' . $firstLogo);
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('storage/' . $firstLogo)
+            ->assertSee(route('produk'))
+            ->assertSee(route('layanan'))
+            ->assertSee(route('kontak'))
+            ->assertSee('Jl. Trans Seba-Bolou, Menia, Kecamatan Sabu Barat, Kabupaten Sabu Raijua, Nusa Tenggara Timur 85391, Indonesia')
+            ->assertSee('https://www.google.com/maps?q=Rumah+Daun%2C+Jl.+Trans+Seba-Bolou%2C+Menia%2C+Kabupaten+Sabu+Raijua%2C+Nusa+Tenggara+Timur+85391%2C+Indonesia&z=17&output=embed', false)
+            ->assertSee('Hubungi Kami');
 
         $this->actingAs($admin)
             ->put(route('admin.settings.general.update'), [

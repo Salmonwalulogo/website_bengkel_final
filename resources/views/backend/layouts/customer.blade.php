@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    @include('components.favicon')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -9,7 +10,7 @@
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet" />
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -26,6 +27,7 @@
     @vite('resources/css/backend/premium.css')
 </head>
 <body class="backend-page" data-user-role="{{ auth()->user()->role }}" data-authenticated="true">
+    @php($unreadCustomerNotifications = auth()->user()->notifications()->unread()->count())
     <!-- Sidebar -->
     <nav class="sidebar" id="customer-sidebar" aria-label="Menu pelanggan">
         <a href="{{ route('home') }}" class="sidebar-brand">
@@ -67,7 +69,7 @@
                 </a>
                 <ul class="submenu" id="customer-services">
                     <li class="nav-item">
-                        <a href="{{ route('layanan') }}" class="nav-link">
+                        <a href="{{ route('customer.services') }}" class="nav-link {{ request()->routeIs('customer.services') ? 'active' : '' }}">
                             <i class="fas fa-list"></i><span>Semua Layanan</span>
                         </a>
                     </li>
@@ -102,6 +104,9 @@
                     <li class="nav-item">
                         <a href="{{ route('customer.notifications') }}" class="nav-link {{ request()->routeIs('customer.notifications*') ? 'active' : '' }}">
                             <i class="fas fa-bell"></i><span>Notifikasi</span>
+                            @if($unreadCustomerNotifications > 0)
+                                <span class="badge rounded-pill bg-danger ms-1" aria-label="{{ $unreadCustomerNotifications }} notifikasi belum dibaca">{{ $unreadCustomerNotifications }}</span>
+                            @endif
                         </a>
                     </li>
                 </ul>

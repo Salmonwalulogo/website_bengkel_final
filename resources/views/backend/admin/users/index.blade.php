@@ -5,7 +5,10 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0"><i class="fas fa-users me-2"></i>User Management</h2>
+    <div>
+        <h2 class="mb-1"><i class="fas fa-users me-2"></i>User Management</h2>
+        <small class="text-muted">Nonaktifkan akun pelanggan tanpa menghapus riwayat transaksinya.</small>
+    </div>
     <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
         <i class="fas fa-plus me-2"></i>Tambah User
     </a>
@@ -24,6 +27,7 @@
                         <th>Username</th>
                         <th>No. HP</th>
                         <th>Role</th>
+                        <th>Status</th>
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -60,6 +64,11 @@
                             <span class="badge {{ $badgeClass }}">{{ ucfirst($user->role) }}</span>
                         </td>
                         <td>
+                            <span class="badge {{ $user->is_active ? 'bg-success' : 'bg-secondary' }}">
+                                {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </td>
+                        <td>
                             <div class="d-flex justify-content-center">
                                 <a href="{{ route('admin.users.show', $user) }}" class="btn-action btn-view" title="Detail">
                                     <i class="fas fa-eye"></i>
@@ -67,6 +76,21 @@
                                 <a href="{{ route('admin.users.edit', $user) }}" class="btn-action btn-edit" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @if($user->isCustomer())
+                                <form action="{{ route('admin.users.updateStatus', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Ubah status akun pelanggan ini?');">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="is_active" value="{{ $user->is_active ? 0 : 1 }}">
+                                    <button
+                                        type="submit"
+                                        class="btn-action {{ $user->is_active ? 'btn-delete' : 'btn-view' }}"
+                                        title="{{ $user->is_active ? 'Nonaktifkan akun' : 'Aktifkan akun' }}"
+                                        aria-label="{{ $user->is_active ? 'Nonaktifkan akun' : 'Aktifkan akun' }}"
+                                    >
+                                        <i class="fas {{ $user->is_active ? 'fa-user-slash' : 'fa-user-check' }}"></i>
+                                    </button>
+                                </form>
+                                @endif
                                 <form action="{{ route('admin.users.destroy', $user) }}" method="POST" 
                                       onsubmit="return confirm('Yakin ingin menghapus user ini?');">
                                     @csrf
@@ -80,7 +104,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
+                        <td colspan="9" class="text-center text-muted py-4">
                             <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
                             Belum ada data user
                         </td>

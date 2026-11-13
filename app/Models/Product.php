@@ -51,6 +51,11 @@ class Product extends Model
         return $this->status === 'active' && $this->is_active;
     }
 
+    public function isAutomotive(): bool
+    {
+        return $this->category?->isAutomotive() ?? false;
+    }
+
     public function scopeForPublicCatalog(Builder $query): Builder
     {
         return $query->whereIn('visibility', [self::VISIBILITY_PUBLIC, self::VISIBILITY_BOTH]);

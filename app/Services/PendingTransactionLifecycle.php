@@ -9,19 +9,19 @@ use Illuminate\Validation\ValidationException;
 
 class PendingTransactionLifecycle
 {
-    public function markPaid(Transaction $transaction): void
+    public function markPaid(Transaction $transaction): bool
     {
-        DB::transaction(function () use ($transaction): void {
+        return DB::transaction(function () use ($transaction): bool {
             $lockedTransaction = Transaction::query()->lockForUpdate()->findOrFail($transaction->id);
             $payment = $lockedTransaction->payment()->lockForUpdate()->first();
 
             if ($lockedTransaction->status === 'completed' && $payment?->status === 'paid') {
-                return;
+                return false;
             }
 
-            if ($lockedTransaction->status !== 'pending' || ! $payment) {
+            if ($lockedTransaction->status !== 'pending' || ! $payment || $payment->status !== 'pending') {
                 throw ValidationException::withMessages([
-                    'status' => 'Hanya transaksi menunggu dengan data pembayaran yang dapat dikonfirmasi.',
+                    'status' => 'Hanya pembayaran berstatus menunggu yang dapat dikonfirmasi.',
                 ]);
             }
 
@@ -34,12 +34,17 @@ class PendingTransactionLifecycle
                 ]);
             }
 
-            $payment->update(['status' => 'paid']);
+            $payment->update([
+                'status' => 'paid',
+                'payment_date' => now(),
+            ]);
             $lockedTransaction->update([
                 'status' => 'completed',
                 'paid_amount' => $amount,
                 'change_amount' => max(0, $amount - $total),
             ]);
+
+            return true;
         });
     }
 

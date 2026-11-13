@@ -51,7 +51,7 @@ class SyncController extends Controller
             'transactions.*.tax' => ['nullable', 'numeric', 'min:0'],
             'transactions.*.total_payment' => ['sometimes', 'numeric', 'min:0'],
             'transactions.*.paid_amount' => ['required', 'numeric', 'min:0'],
-            'transactions.*.payment_method' => ['sometimes', 'string', Rule::in(['cash', 'qris', 'debit', 'kredit', 'ewallet', 'transfer'])],
+            'transactions.*.payment_method' => ['sometimes', 'string', Rule::in(['cash', 'qris', 'ewallet', 'transfer'])],
             'transactions.*.items' => ['required', 'array', 'min:1'],
             'transactions.*.items.*.product_id' => ['required', 'exists:products,id'],
             'transactions.*.items.*.item_name' => ['sometimes', 'string', 'max:255'],

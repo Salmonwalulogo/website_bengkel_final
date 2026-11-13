@@ -58,7 +58,7 @@ class TransactionController extends Controller
             'paid_amount' => $customerOrder
                 ? ['prohibited']
                 : ['required', 'numeric', 'min:0'],
-            'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'debit', 'kredit', 'ewallet', 'transfer'])],
+            'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'ewallet', 'transfer'])],
             'client_uuid' => ['nullable', 'uuid'],
         ]);
 

@@ -18,7 +18,7 @@
                             <th>Total</th>
                             <th>Metode Pembayaran</th>
                             <th>Status</th>
-                            <th>Tanggal</th>
+                            <th>Tanggal (waktu lokal)</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -31,12 +31,20 @@
                             <td class="fw-bold">Rp {{ number_format($transaction->total_payment, 0, ',', '.') }}</td>
                             <td>{{ $transaction->payment_method_label }}</td>
                             <td><span class="badge {{ $transaction->status_badge }}">{{ $transaction->status_label }}</span></td>
-                            <td>{{ $transaction->created_at?->format('d/m/Y H:i') ?? '-' }}</td>
+                            <td>
+                                @if($transaction->created_at)
+                                    <time class="invoice-local-time" datetime="{{ $transaction->created_at->toISOString() }}">
+                                        {{ $transaction->created_at->format('d/m/Y H:i') }}
+                                    </time>
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>
                                 <form method="POST" action="{{ route('kasir.pos.print', $transaction) }}">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-print me-1"></i>{{ config('escpos.driver') === 'windows' ? 'Cetak' : 'Buka struk' }}
+                                        <i class="fas fa-print me-1"></i>Cetak struk
                                     </button>
                                 </form>
                             </td>
@@ -54,3 +62,23 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        const invoiceTimeFormatter = new Intl.DateTimeFormat('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+        });
+
+        document.querySelectorAll('.invoice-local-time').forEach((time) => {
+            const transactionTime = new Date(time.dateTime);
+            if (!Number.isNaN(transactionTime.getTime())) {
+                time.textContent = invoiceTimeFormatter.format(transactionTime);
+            }
+        });
+    </script>
+@endpush

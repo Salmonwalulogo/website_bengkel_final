@@ -7,8 +7,10 @@ use App\Models\Booking;
 use App\Models\Notification;
 use App\Models\Product;
 use App\Models\Service;
-use Illuminate\Http\Request;
+use App\Services\AdminOrderNotifier;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class CustomerDashboardController extends Controller
@@ -34,7 +36,21 @@ class CustomerDashboardController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('backend.customer.products', compact('products'));
+        return view('backend.customer.products', [
+            'products' => $products,
+            'vehicles' => Auth::user()->vehicles()->orderBy('brand')->orderBy('model')->get(),
+        ]);
+    }
+
+    public function services()
+    {
+        $services = Service::where('status', 'active')
+            ->orderBy('category')
+            ->orderBy('name')
+            ->get()
+            ->groupBy(fn (Service $service) => $service->category ?: 'Lainnya');
+
+        return view('backend.customer.services', compact('services'));
     }
 
     public function vehicles()
@@ -87,12 +103,22 @@ class CustomerDashboardController extends Controller
             'request_details' => 'nullable|string|max:3000',
         ]);
 
+        $service = Service::findOrFail($validated['service_id']);
+
+        if (! $service->isAutomotive()) {
+            $validated['vehicle_id'] = null;
+        }
+
         if (!empty($validated['vehicle_id'])) {
             $vehicleOwned = Auth::user()->vehicles()->whereKey($validated['vehicle_id'])->exists();
             abort_unless($vehicleOwned, 403);
         }
 
-        Auth::user()->bookings()->create($validated);
+        DB::transaction(function () use ($validated) {
+            $booking = Auth::user()->bookings()->create($validated);
+            app(AdminOrderNotifier::class)->serviceBooking($booking);
+        });
+
         return redirect()->route('customer.bookings')->with('success', 'Permintaan layanan berhasil dikirim dan menunggu konfirmasi admin.');
     }
 
@@ -121,7 +147,7 @@ class CustomerDashboardController extends Controller
 
     public function transactions()
     {
-        $transactions = Auth::user()->customerTransactions()->with(['payment', 'booking.service'])->latest()->paginate(10);
+        $transactions = Auth::user()->customerTransactions()->with(['payment', 'booking.service', 'details'])->latest()->paginate(10);
         return view('backend.customer.transactions', compact('transactions'));
     }
 

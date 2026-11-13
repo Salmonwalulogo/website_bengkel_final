@@ -22,23 +22,29 @@ class CustomerBookingFlowTest extends TestCase
             'model' => 'Vario',
         ]);
         Service::create([
-            'name' => 'Servis Berkala',
-            'description' => 'Pemeriksaan dan perawatan rutin kendaraan.',
+            'name' => 'Sewa Peralatan',
+            'category' => 'Penyewaan',
+            'description' => 'Penyediaan peralatan untuk kebutuhan acara.',
             'harga' => 150000,
             'duration' => '2 jam',
             'status' => 'active',
         ]);
 
-        $this->actingAs($customer)
+        $response = $this->actingAs($customer)
             ->get(route('customer.booking.create'))
             ->assertOk()
             ->assertSee('Pilih layanan')
-            ->assertSee('Servis Berkala')
-            ->assertSee('Pemeriksaan dan perawatan rutin kendaraan.')
+            ->assertSee('Sewa Peralatan')
+            ->assertSee('Penyediaan peralatan untuk kebutuhan acara.')
             ->assertSee('2 jam')
             ->assertSee('Tentukan jadwal')
             ->assertSee('Kendaraan (opsional)')
-            ->assertSee(route('customer.bookings'));
+            ->assertSee('data-automotive="false"', false)
+            ->assertSee(route('customer.bookings'))
+            ->assertSee(route('customer.dashboard'))
+            ->assertSee('Kembali');
+
+        $this->assertSame(1, preg_match('/data-service-vehicle-fields\s+hidden/', $response->getContent()));
     }
 
     public function test_customer_can_submit_booking_from_the_ordered_flow(): void
@@ -52,6 +58,7 @@ class CustomerBookingFlowTest extends TestCase
         ]);
         $service = Service::create([
             'name' => 'Ganti Oli',
+            'category' => 'Otomotif',
             'harga' => 80000,
             'status' => 'active',
         ]);
@@ -73,6 +80,60 @@ class CustomerBookingFlowTest extends TestCase
             'service_id' => $service->id,
             'booking_time' => '09:30',
             'request_details' => 'Periksa suara mesin',
+        ]);
+    }
+
+    public function test_vehicle_picker_is_visible_when_an_automotive_service_is_preselected(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $automotiveService = Service::create([
+            'name' => 'Servis Berkala',
+            'category' => 'Otomotif',
+            'harga' => 150000,
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($customer)
+            ->get(route('customer.booking.create', ['service' => $automotiveService->id]))
+            ->assertOk()
+            ->assertSee('data-automotive="true"', false)
+            ->assertSee('name="vehicle_id"', false);
+
+        $this->assertSame(0, preg_match('/data-service-vehicle-fields\s+hidden/', $response->getContent()));
+    }
+
+    public function test_new_service_booking_creates_an_unread_notification_for_each_admin(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $secondAdmin = User::factory()->create(['role' => 'admin']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $service = Service::create([
+            'name' => 'Sewa Tenda',
+            'category' => 'Penyewaan',
+            'harga' => 0,
+            'status' => 'active',
+        ]);
+        $bookingDate = now()->addDay()->toDateString();
+
+        $this->actingAs($customer)->post(route('customer.booking.store'), [
+            'service_id' => $service->id,
+            'booking_date' => $bookingDate,
+            'booking_time' => '09:30',
+            'request_details' => 'Tenda untuk acara keluarga',
+        ])->assertRedirect(route('customer.bookings'));
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $admin->id,
+            'title' => 'Permintaan layanan baru',
+            'message' => "{$customer->name} memesan layanan Sewa Tenda untuk " . \Illuminate\Support\Carbon::parse($bookingDate)->format('d/m/Y') . ' pukul 09:30.',
+            'type' => 'booking',
+            'is_read' => false,
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $secondAdmin->id,
+            'title' => 'Permintaan layanan baru',
+            'type' => 'booking',
+            'is_read' => false,
         ]);
     }
 
@@ -103,6 +164,38 @@ class CustomerBookingFlowTest extends TestCase
         ]);
     }
 
+    public function test_non_automotive_service_ignores_a_submitted_vehicle(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $vehicle = Vehicle::create([
+            'user_id' => $customer->id,
+            'plate_number' => 'B 1234 ABC',
+            'brand' => 'Honda',
+            'model' => 'Vario',
+        ]);
+        $service = Service::create([
+            'name' => 'Sewa Tenda',
+            'category' => 'Penyewaan',
+            'harga' => 0,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($customer)
+            ->post(route('customer.booking.store'), [
+                'service_id' => $service->id,
+                'vehicle_id' => $vehicle->id,
+                'booking_date' => now()->addDay()->toDateString(),
+                'booking_time' => '10:00',
+            ])
+            ->assertRedirect(route('customer.bookings'));
+
+        $this->assertDatabaseHas('bookings', [
+            'user_id' => $customer->id,
+            'service_id' => $service->id,
+            'vehicle_id' => null,
+        ]);
+    }
+
     public function test_service_request_requires_a_customer_account(): void
     {
         $this->get(route('customer.booking.create'))
@@ -121,7 +214,42 @@ class CustomerBookingFlowTest extends TestCase
         $this->get(route('layanan'))
             ->assertOk()
             ->assertSee('Sewa Lampu Acara')
-            ->assertSee('Daftar')
+            ->assertSee(route('home'))
+            ->assertSee('Kembali')
+            ->assertSee('Login')
+            ->assertDontSee('Daftar')
+            ->assertDontSee('Register')
+            ->assertSee(route('customer.booking.create', ['service' => $service->id]));
+    }
+
+    public function test_customer_is_redirected_to_their_service_catalog_from_the_public_services_page(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        $this->actingAs($customer)
+            ->get(route('layanan'))
+            ->assertRedirect(route('customer.services'));
+    }
+
+    public function test_customer_can_browse_services_inside_their_dashboard(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $service = Service::create([
+            'name' => 'Servis Berkala',
+            'category' => 'Otomotif',
+            'description' => 'Pemeriksaan dan perawatan kendaraan.',
+            'harga' => 150000,
+            'duration' => '2 jam',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('customer.services'))
+            ->assertOk()
+            ->assertSee('Semua Layanan')
+            ->assertSee('AREA PELANGGAN')
+            ->assertSee('Servis Berkala')
+            ->assertSee('Pemeriksaan dan perawatan kendaraan.')
             ->assertSee(route('customer.booking.create', ['service' => $service->id]));
     }
 

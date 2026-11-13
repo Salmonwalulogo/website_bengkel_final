@@ -29,7 +29,7 @@
     letter-spacing: .04em;
 }
 .backend-page .sidebar-brand small {
-    color: #d8c18a;
+    color: #e7ad3d;
     font-size: .62rem;
     font-weight: 700;
     letter-spacing: .13em;
@@ -60,9 +60,9 @@
     border-radius: 50%;
     box-shadow: 0 0 0 28px rgba(255,255,255,.04), 0 0 0 58px rgba(255,255,255,.03);
 }
-.admin-hero { background: linear-gradient(120deg, #102f35, #176e6a); }
-.cashier-hero { background: linear-gradient(120deg, #173d43, #168f8a); }
-.customer-hero { background: linear-gradient(120deg, #102f35, #287c72); }
+.admin-hero,
+.cashier-hero,
+.customer-hero { background: linear-gradient(120deg, #102f35, #176e6a); }
 .dashboard-hero > * { position: relative; z-index: 1; }
 .dashboard-hero h1 { margin: 8px 0 8px; font-size: clamp(1.65rem, 3vw, 2.45rem); font-weight: 800; letter-spacing: -.03em; }
 .dashboard-hero p { max-width: 620px; margin: 0; color: rgba(255,255,255,.76); line-height: 1.7; }

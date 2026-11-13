@@ -38,6 +38,10 @@ Route::get('/', function () {
 
 // Halaman Layanan
 Route::get('/layanan', function () {
+    if (auth()->user()?->role === 'customer') {
+        return redirect()->route('customer.services');
+    }
+
     $services = Service::where('status', 'active')
         ->orderBy('category')
         ->orderBy('name')
@@ -52,9 +56,14 @@ Route::get('/produk', function () {
     $products = Product::where('status', 'active')
                        ->where('is_active', true)
                        ->forPublicCatalog()
+                       ->with('category')
                        ->latest()
                        ->paginate(12);
-    return view('frontend.pages.produk', compact('products'));
+    $vehicles = auth()->user()?->role === 'customer'
+        ? auth()->user()->vehicles()->orderBy('brand')->orderBy('model')->get()
+        : collect();
+
+    return view('frontend.pages.produk', compact('products', 'vehicles'));
 })->name('produk');
 
 // Halaman Tentang Kami
@@ -72,12 +81,12 @@ Route::post('/kontak', [ContactMessageController::class, 'store'])
 
 Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
 Route::post('/keranjang/checkout', [CartController::class, 'checkout'])
-    ->middleware(['auth', 'role:customer'])
+    ->middleware(['auth', 'active', 'role:customer'])
     ->name('cart.checkout');
 Route::post('/keranjang/{product}', [CartController::class, 'add'])->name('cart.add');
 Route::patch('/keranjang/{product}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/keranjang/{product}', [CartController::class, 'remove'])->name('cart.remove');
-Route::middleware(['auth', 'role:customer'])->group(function () {
+Route::middleware(['auth', 'active', 'role:customer'])->group(function () {
     Route::get('/produk/{product}/beli-sekarang', [CartController::class, 'buyNow'])->name('cart.buy-now');
     Route::post('/produk/{product}/beli-sekarang', [CartController::class, 'checkoutNow'])->name('cart.buy-now.checkout');
 });
@@ -89,7 +98,7 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
     
     // Dashboard redirect berdasarkan role user
     Route::get('/dashboard', function () {
@@ -120,24 +129,28 @@ Route::middleware(['auth'])->group(function () {
 | Admin Routes (Khusus Role: admin)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'active', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
      
     // Resource CRUD
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)->except('show');
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    Route::patch('/users/{user}/status', [\App\Http\Controllers\Admin\UserController::class, 'updateStatus'])
+        ->name('users.updateStatus');
     Route::resource('vehicles', \App\Http\Controllers\Admin\VehicleController::class)->except('show');
     Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class)->except('show');
     Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
     Route::resource('transactions', \App\Http\Controllers\Admin\TransactionController::class)->only(['index', 'create', 'store', 'show']);
     Route::patch('/transactions/{transaction}/status', [\App\Http\Controllers\Admin\TransactionController::class, 'updateStatus'])->name('transactions.updateStatus');
-    Route::resource('payments', \App\Http\Controllers\Admin\PaymentController::class)->except(['show', 'destroy']);
+    Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');
     Route::resource('notifications', \App\Http\Controllers\Admin\NotificationController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::resource('contact-messages', \App\Http\Controllers\Admin\ContactMessageController::class)
         ->only(['index', 'show', 'destroy']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])
         ->name('notifications.markAsRead');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.markAllAsRead');
     
     // Laporan
     Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
@@ -166,9 +179,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 | Customer Routes (Khusus Role: customer)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer.')->group(function () {
+Route::middleware(['auth', 'active', 'role:customer'])->prefix('customer')->name('customer.')->group(function () {
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
     Route::get('/produk', [CustomerDashboardController::class, 'products'])->name('products');
+    Route::get('/layanan', [CustomerDashboardController::class, 'services'])->name('services');
     Route::get('/kendaraan', [CustomerDashboardController::class, 'vehicles'])->name('vehicles');
     Route::post('/kendaraan', [CustomerDashboardController::class, 'storeVehicle'])->name('vehicles.store');
     Route::delete('/kendaraan/{vehicle}', [CustomerDashboardController::class, 'destroyVehicle'])->name('vehicles.destroy');
@@ -187,11 +201,12 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->name('customer
 | Cashier Routes (Khusus Role: kasir)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:kasir'])->prefix('kasir')->name('kasir.')->group(function () {
+Route::middleware(['auth', 'active', 'role:kasir'])->prefix('kasir')->name('kasir.')->group(function () {
     Route::get('/dashboard', [CashierDashboardController::class, 'index'])->name('dashboard');
     Route::get('/pesanan', [CashierDashboardController::class, 'orders'])->name('orders');
     Route::post('/pesanan/{booking}/pembayaran', [CashierDashboardController::class, 'payServiceBooking'])->name('orders.pay');
     Route::get('/pembayaran', [CashierDashboardController::class, 'payments'])->name('payments');
+    Route::patch('/pembayaran/{payment}/konfirmasi', [CashierDashboardController::class, 'confirmPayment'])->name('payments.confirm');
     Route::get('/invoice', [CashierDashboardController::class, 'invoices'])->name('invoices');
     Route::get('/transaksi', [CashierDashboardController::class, 'pos'])->name('pos');
     Route::get('/transaksi/produk', [CashierDashboardController::class, 'productCatalog'])->name('pos.products');

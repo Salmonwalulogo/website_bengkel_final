@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    @include('components.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Layanan dan Pemesanan - UD Rumah Daun</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet">
 
     @vite('resources/css/frontend/frontend.css')
     @vite('resources/css/frontend/layanan.css')
@@ -17,6 +20,9 @@
 
     <section class="page-header">
         <div class="container">
+            <a class="btn btn-outline-light service-back-button" href="{{ auth()->user()?->role === 'customer' ? route('customer.dashboard') : route('home') }}">
+                <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Kembali
+            </a>
             <h1>Jasa &amp; Layanan <span>Kami</span></h1>
             <p class="lead">Pilih layanan, kirim permintaan, lalu tunggu konfirmasi ketersediaan dari tim UD Rumah Daun.</p>
         </div>
@@ -47,7 +53,6 @@
                                     <a class="btn btn-success" href="{{ route('customer.booking.create', ['service' => $service->id]) }}">Pesan layanan</a>
                                 @elseif(auth()->guest())
                                     <a class="btn btn-success" href="{{ route('customer.booking.create', ['service' => $service->id]) }}">Login untuk pesan</a>
-                                    <a class="btn btn-outline-success ms-1" href="{{ route('register') }}">Daftar</a>
                                 @else
                                     <span class="text-muted small">Masuk dengan akun pelanggan untuk memesan.</span>
                                 @endif

@@ -36,7 +36,7 @@
                             <td>
                                 @if($booking->transaction?->payment?->status === 'paid')
                                     <span class="badge bg-success">Lunas · {{ $booking->transaction->invoice_number }}</span>
-                                @elseif($booking->status === 'confirmed' && (float) ($booking->quoted_price ?? $booking->service->harga ?? 0) > 0)
+                                @elseif(in_array($booking->status, ['confirmed', 'completed'], true) && (float) ($booking->quoted_price ?? $booking->service->harga ?? 0) > 0)
                                     <form action="{{ route('kasir.orders.pay', $booking) }}" method="POST" class="d-flex flex-wrap gap-2">
                                         @csrf
                                         <select name="payment_method" class="form-select form-select-sm" aria-label="Metode pembayaran">
@@ -44,12 +44,10 @@
                                             <option value="qris">QRIS</option>
                                             <option value="transfer">Transfer</option>
                                             <option value="ewallet">E-Wallet</option>
-                                            <option value="debit">Debit</option>
-                                            <option value="kredit">Kredit</option>
                                         </select>
-                                        <button class="btn btn-sm btn-success" type="submit">Bayar Rp {{ number_format($booking->quoted_price ?? $booking->service->harga, 0, ',', '.') }}</button>
+                                        <button class="btn btn-sm btn-success" type="submit">Konfirmasi pembayaran · Rp {{ number_format($booking->quoted_price ?? $booking->service->harga, 0, ',', '.') }}</button>
                                     </form>
-                                @elseif($booking->status === 'confirmed')
+                                @elseif(in_array($booking->status, ['confirmed', 'completed'], true))
                                     <span class="text-muted small">Admin perlu menetapkan harga</span>
                                 @else
                                     <span class="text-muted small">Menunggu konfirmasi admin</span>

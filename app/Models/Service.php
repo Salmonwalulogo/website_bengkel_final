@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Service extends Model
 {
@@ -21,6 +22,21 @@ class Service extends Model
     protected $casts = [
         'harga' => 'decimal:2',
     ];
+
+    public function isAutomotive(): bool
+    {
+        return Str::contains(Str::lower((string) $this->category), [
+            'otomotif',
+            'kendaraan',
+            'suku cadang',
+            'ban',
+            'oli',
+            'pelumas',
+            'motor',
+            'mobil',
+            'bengkel',
+        ]);
+    }
 
     // Relasi ke bookings
     public function bookings()

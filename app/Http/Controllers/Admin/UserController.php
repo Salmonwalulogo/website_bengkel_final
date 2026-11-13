@@ -86,13 +86,35 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User berhasil diperbarui.');
     }
 
+    public function updateStatus(Request $request, User $user)
+    {
+        abort_unless($user->isCustomer(), 404);
+
+        $validated = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+        $isActive = (bool) $validated['is_active'];
+        $user->update(['is_active' => $isActive]);
+
+        if (! $isActive) {
+            $user->tokens()->delete();
+        }
+
+        return redirect()->route('admin.users.index')->with(
+            'success',
+            $isActive
+                ? 'Akun pelanggan berhasil diaktifkan.'
+                : 'Akun pelanggan berhasil dinonaktifkan. Akses web dan token API telah diblokir.'
+        );
+    }
+
     public function destroy(User $user)
     {
         abort_if($user->is(auth()->user()), 422, 'Akun yang sedang digunakan tidak dapat dihapus.');
 
         if ($user->hasBusinessHistory()) {
             return back()->withErrors([
-                'user' => 'Akun memiliki riwayat kendaraan, layanan, transaksi, atau audit dan tidak dapat dihapus.',
+                'user' => 'Akun memiliki riwayat kendaraan, layanan, transaksi, atau audit sehingga tidak dapat dihapus. Nonaktifkan akun pelanggan untuk mencabut akses tanpa menghapus riwayat.',
             ]);
         }
 

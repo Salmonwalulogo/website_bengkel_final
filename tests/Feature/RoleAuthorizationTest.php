@@ -56,7 +56,7 @@ class RoleAuthorizationTest extends TestCase
             ->assertOk()
             ->assertSee('Lihat Layanan')
             ->assertSee('Pesan Layanan')
-            ->assertSee(route('layanan'))
+            ->assertSee(route('customer.services'))
             ->assertSee(route('customer.bookings'));
     }
 }

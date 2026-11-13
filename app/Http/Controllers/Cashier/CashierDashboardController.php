@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\Models\TransactionDetail;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\AdminOrderNotifier;
+use App\Services\PendingTransactionLifecycle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,23 +43,43 @@ class CashierDashboardController extends Controller
         return view('backend.cashier.orders', compact('bookings'));
     }
 
-    public function payServiceBooking(Request $request, Booking $booking)
+    public function payServiceBooking(
+        Request $request,
+        Booking $booking,
+        AdminOrderNotifier $notifier,
+        PendingTransactionLifecycle $lifecycle
+    )
     {
         $validated = $request->validate([
-            'payment_method' => ['required', 'in:cash,qris,debit,kredit,ewallet,transfer'],
+            'payment_method' => ['required', 'in:cash,qris,ewallet,transfer'],
         ]);
 
-        $transaction = DB::transaction(function () use ($booking, $validated, $request) {
+        $result = DB::transaction(function () use ($booking, $validated, $request, $notifier, $lifecycle) {
             $booking = Booking::with('service')->lockForUpdate()->findOrFail($booking->id);
 
-            if ($booking->status !== 'confirmed') {
+            if (! in_array($booking->status, ['confirmed', 'completed'], true)) {
                 throw ValidationException::withMessages([
-                    'booking' => 'Pembayaran hanya dapat dicatat untuk permintaan yang sudah dikonfirmasi admin.',
+                    'booking' => 'Pembayaran hanya dapat dicatat untuk layanan yang sudah dikonfirmasi atau selesai.',
                 ]);
             }
 
-            $existingTransaction = Transaction::where('booking_id', $booking->id)->first();
+            $existingTransaction = Transaction::where('booking_id', $booking->id)
+                ->lockForUpdate()
+                ->first();
             if ($existingTransaction) {
+                $payment = $existingTransaction->payment()->lockForUpdate()->first();
+                if ($existingTransaction->status === 'completed' && $payment?->status === 'paid') {
+                    return $existingTransaction;
+                }
+
+                $existingTransaction->update(['payment_method' => $validated['payment_method']]);
+                if ($lifecycle->markPaid($existingTransaction)) {
+                    $notifier->paymentConfirmed(
+                        $existingTransaction->payment()->firstOrFail(),
+                        $request->user()
+                    );
+                }
+
                 return $existingTransaction;
             }
 
@@ -84,7 +106,7 @@ class CashierDashboardController extends Controller
                 'status' => 'completed',
             ]);
 
-            Payment::create([
+            $payment = Payment::create([
                 'transaction_id' => $transaction->id,
                 'payment_code' => 'PAY-' . strtoupper(Str::random(12)),
                 'amount' => $amount,
@@ -92,20 +114,54 @@ class CashierDashboardController extends Controller
                 'status' => 'paid',
             ]);
 
+            $notifier->paymentConfirmed($payment, $request->user());
+
             return $transaction;
         });
 
         return redirect()->route('kasir.orders')
-            ->with('success', 'Pembayaran layanan tercatat dengan invoice ' . $transaction->invoice_number . '.');
+            ->with('success', 'Pembayaran layanan tercatat dengan invoice ' . $result->invoice_number . '.');
+    }
+
+    public function confirmPayment(
+        Request $request,
+        Payment $payment,
+        PendingTransactionLifecycle $lifecycle,
+        AdminOrderNotifier $notifier
+    ) {
+        $confirmed = DB::transaction(function () use ($request, $payment, $lifecycle, $notifier): bool {
+            $transaction = Transaction::query()->findOrFail($payment->transaction_id);
+            if (! $lifecycle->markPaid($transaction)) {
+                return false;
+            }
+
+            $notifier->paymentConfirmed($payment->fresh(), $request->user());
+
+            return true;
+        });
+
+        if (! $confirmed) {
+            return redirect()->route('kasir.payments')
+                ->with('info', 'Pembayaran ini sudah dikonfirmasi sebelumnya.');
+        }
+
+        return redirect()->route('kasir.payments')
+            ->with('success', 'Pembayaran berhasil dikonfirmasi dan admin telah diberi notifikasi.');
     }
 
     public function payments()
     {
         $payments = Payment::with('transaction')
-            ->latest('payment_date')
+            ->latest('created_at')
+            ->latest('id')
             ->paginate(10);
+        $pendingPaymentCount = Payment::query()
+            ->where('status', 'pending')
+            ->whereHas('transaction', fn ($query) => $query->where('status', 'pending'))
+            ->count();
+        $paidPaymentCount = Payment::where('status', 'paid')->count();
 
-        return view('backend.cashier.payments', compact('payments'));
+        return view('backend.cashier.payments', compact('payments', 'pendingPaymentCount', 'paidPaymentCount'));
     }
 
     public function invoices()
@@ -155,7 +211,7 @@ class CashierDashboardController extends Controller
             ->get();
     }
 
-    public function storeTransaction(Request $request)
+    public function storeTransaction(Request $request, AdminOrderNotifier $notifier)
     {
         $validated = $request->validate([
             'customer_id' => [
@@ -171,7 +227,7 @@ class CashierDashboardController extends Controller
             'tax' => ['nullable', 'numeric', 'min:0'],
             'other_fee' => ['nullable', 'numeric', 'min:0'],
             'paid_amount' => ['required', 'numeric', 'min:0'],
-            'payment_method' => ['required', 'in:cash,qris,debit,kredit,ewallet,transfer'],
+            'payment_method' => ['required', 'in:cash,qris,ewallet,transfer'],
         ]);
 
         $existingTransaction = Transaction::where('checkout_token', $validated['checkout_token'])
@@ -182,7 +238,7 @@ class CashierDashboardController extends Controller
         }
 
         try {
-            $transaction = DB::transaction(function () use ($validated, $request) {
+            $transaction = DB::transaction(function () use ($validated, $request, $notifier) {
             $subtotal = 0;
             $details = [];
             $itemsByProduct = collect($validated['items'])
@@ -259,13 +315,15 @@ class CashierDashboardController extends Controller
                 ]);
             }
 
-            Payment::create([
+            $payment = Payment::create([
                 'transaction_id' => $transaction->id,
                 'payment_code' => 'PAY-' . strtoupper(Str::random(12)),
                 'amount' => $paidAmount,
                 'payment_date' => now(),
                 'status' => 'paid',
             ]);
+
+            $notifier->paymentConfirmed($payment, $request->user());
 
                 return $transaction->load(['user', 'customer', 'details']);
             });

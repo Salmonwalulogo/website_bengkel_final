@@ -65,7 +65,7 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Produk</th>
+                                <th>Produk / Kendaraan</th>
                                 <th>Harga</th>
                                 <th>Jumlah</th>
                                 <th>Subtotal</th>
@@ -74,7 +74,12 @@
                         <tbody>
                             @forelse($transaction->details as $detail)
                             <tr>
-                                <td>{{ $detail->product->name ?? '-' }}</td>
+                                <td>
+                                    {{ $detail->product_name ?? $detail->product->name ?? '-' }}
+                                    @if($detail->vehicle_info)
+                                        <small class="d-block text-muted">Kendaraan: {{ $detail->vehicle_info }}</small>
+                                    @endif
+                                </td>
                                 <td>Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
                                 <td>{{ $detail->quantity }}</td>
                                 <td class="fw-bold">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>

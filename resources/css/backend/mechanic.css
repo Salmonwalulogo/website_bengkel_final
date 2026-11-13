@@ -1,15 +1,15 @@
 :root {
-            --mekanik-primary: #2dd4bf;
-            --mekanik-dark: #0f766e;
-            --mekanik-darker: #134e4a;
-            --mekanik-light: #ccfbf1;
-            --mekanik-bg: #f0fdfa;
+            --mekanik-primary: #176e6a;
+            --mekanik-dark: #0d5e5a;
+            --mekanik-darker: #102f35;
+            --mekanik-light: #e3f2ee;
+            --mekanik-bg: #f3f8f6;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Manrope', sans-serif;
             background: var(--mekanik-bg);
             min-height: 100vh;
             overflow-x: hidden;

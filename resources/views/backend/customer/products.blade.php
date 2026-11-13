@@ -21,9 +21,13 @@
     @if(session('error'))
         <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
     @endif
+    @if($errors->any())
+        <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
+    @endif
 
     <div class="row g-4">
         @forelse($products as $product)
+            @php($remainingStock = max(0, (int) $product->stok - (int) (session('cart', [])[$product->id] ?? 0)))
             <div class="col-sm-6 col-xl-4">
                 <div class="card h-100 shadow-sm">
                     @if($product->foto && file_exists(public_path('storage/' . $product->foto)))
@@ -40,13 +44,9 @@
                         <p class="h5 text-success fw-bold">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
                         <p class="text-muted small mb-3">Stok: {{ $product->stok }}</p>
                         <div class="mt-auto d-grid gap-2">
-                            <form action="{{ route('cart.add', $product) }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="quantity" value="1">
-                                <button class="btn btn-outline-success w-100" type="submit" @disabled($product->stok < 1)>
-                                    <i class="fas fa-cart-plus me-2"></i>Tambah ke Keranjang
-                                </button>
-                            </form>
+                            <button class="btn btn-outline-success w-100" type="button" data-bs-toggle="modal" data-bs-target="#add-to-cart-{{ $product->id }}" @disabled($remainingStock < 1)>
+                                <i class="fas fa-cart-plus me-2"></i>Tambah ke Keranjang
+                            </button>
                             @if($product->stok > 0)
                                 <a href="{{ route('cart.buy-now', $product) }}" class="btn btn-success">
                                     <i class="fas fa-bag-shopping me-2"></i>Beli Sekarang
@@ -55,6 +55,7 @@
                         </div>
                     </div>
                 </div>
+                @include('frontend.partials.add-to-cart-modal', ['product' => $product, 'vehicles' => $vehicles])
             </div>
         @empty
             <div class="col-12">

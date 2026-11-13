@@ -50,12 +50,39 @@ class CashierPosTest extends TestCase
             ->assertHeader('Cache-Control', 'no-store, private')
             ->assertSee($transaction->receipt_number)
             ->assertSee('Produk Cetak')
+            ->assertSee('id="printed-at"', false)
+            ->assertSee("window.addEventListener('beforeprint', updatePrintedAt)", false)
+            ->assertSee("window.addEventListener('load'", false)
             ->assertSee('window.print()', false);
+    }
+
+    public function test_invoice_timestamps_are_rendered_in_the_cashier_browser_timezone(): void
+    {
+        config(['escpos.driver' => 'browser']);
+
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $transaction = Transaction::create([
+            'user_id' => $cashier->id,
+            'subtotal' => 10000,
+            'paid_amount' => 10000,
+            'total_payment' => 10000,
+            'status' => 'completed',
+            'payment_method' => 'cash',
+            'created_at' => '2026-11-08 03:29:00',
+        ]);
+
+        $this->actingAs($cashier)
+            ->get(route('kasir.invoices'))
+            ->assertOk()
+            ->assertSee('Tanggal (waktu lokal)')
+            ->assertSee('class="invoice-local-time" datetime="' . $transaction->created_at->toISOString() . '"', false)
+            ->assertSee("new Intl.DateTimeFormat('id-ID'", false);
     }
 
     public function test_cashier_can_open_pos_and_complete_a_transaction(): void
     {
         $cashier = User::factory()->create(['role' => 'kasir']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $category = Category::create(['name' => 'Retail']);
         $product = Product::create([
             'category_id' => $category->id,
@@ -71,6 +98,7 @@ class CashierPosTest extends TestCase
         $this->actingAs($cashier)
             ->get(route('kasir.pos'))
             ->assertOk()
+            ->assertSee('<h1 class="text-white">Transaksi Pembayaran</h1>', false)
             ->assertSee('Transaksi Pembayaran Kasir');
 
         $checkoutToken = (string) Str::uuid();
@@ -99,6 +127,10 @@ class CashierPosTest extends TestCase
             'subtotal' => 20000,
         ]);
         $this->assertDatabaseHas('products', ['id' => $product->id, 'stok' => 3]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $admin->id,
+            'title' => 'Pembayaran dikonfirmasi kasir',
+        ]);
 
         $this->actingAs($cashier)->post(route('kasir.pos.store'), [
             'checkout_token' => $checkoutToken,
@@ -107,6 +139,7 @@ class CashierPosTest extends TestCase
             'payment_method' => 'cash',
         ]);
         $this->assertDatabaseCount('transactions', 1);
+        $this->assertSame(1, \App\Models\Notification::where('user_id', $admin->id)->count());
         $this->assertDatabaseHas('products', ['id' => $product->id, 'stok' => 3]);
     }
 
@@ -139,7 +172,10 @@ class CashierPosTest extends TestCase
         $firstReceiptNumber = \App\Models\Transaction::latest('id')->value('receipt_number');
         $this->assertSame($firstPreview, $firstNumber);
         $this->assertSame($firstReceiptPreview, $firstReceiptNumber);
-        $this->get(route('kasir.pos'))->assertSee($firstReceiptNumber);
+        $this->get(route('kasir.pos'))
+            ->assertSee($firstReceiptNumber)
+            ->assertSee('id="receipt-printed-at"', false)
+            ->assertSee('Tanggal cetak');
 
         $secondPreview = \App\Models\Transaction::nextInvoiceNumber();
         $secondReceiptPreview = \App\Models\Transaction::nextReceiptNumber();
