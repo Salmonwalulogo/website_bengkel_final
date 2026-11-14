@@ -60,7 +60,10 @@
                     <tr>
                         <th>Kode pembayaran</th>
                         <th>Invoice</th>
+                        <th>Pelanggan / Pesanan</th>
                         <th>Jumlah</th>
+                        <th>Metode</th>
+                        <th>Bukti</th>
                         <th>Status</th>
                         <th>Tanggal</th>
                         <th class="text-end">Aksi</th>
@@ -71,7 +74,16 @@
                     <tr>
                         <td><span class="payment-code">{{ $payment->payment_code }}</span></td>
                         <td><span class="payment-invoice">{{ $payment->transaction?->invoice_number ?? '-' }}</span></td>
+                        <td>{{ $payment->transaction?->customer?->name ?? '-' }}<br><small class="text-muted">{{ $payment->transaction?->booking?->service?->name ?? $payment->transaction?->details?->first()?->product_name ?? 'Transaksi produk' }}</small></td>
                         <td><strong class="payment-amount">Rp {{ number_format($payment->amount, 0, ',', '.') }}</strong></td>
+                        <td>{{ $payment->transaction?->payment_method_label ?? '-' }}</td>
+                        <td>
+                            @if($payment->proof_image)
+                                <a href="{{ route('kasir.payments.proof', $payment) }}" target="_blank" rel="noopener">Lihat bukti</a>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
                         <td>
                             <span class="payment-status-pill payment-status-{{ $payment->status }}">
                                 <span></span>{{ ucfirst($payment->status) }}
@@ -104,7 +116,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="9">
                             <div class="payments-empty">
                                 <span><i class="fas fa-receipt" aria-hidden="true"></i></span>
                                 <strong>Belum ada pembayaran</strong>

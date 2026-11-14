@@ -48,6 +48,30 @@
                     <label class="form-label" for="deskripsi">Deskripsi</label>
                     <textarea id="deskripsi" name="deskripsi" class="form-control" rows="4">{{ old('deskripsi', $settings['deskripsi']) }}</textarea>
                 </div>
+                <div class="col-12 mt-3">
+                    <h5 class="mb-3">Pembayaran Online</h5>
+                    <p class="text-muted">Informasi ini ditampilkan kepada pelanggan setelah harga booking dikonfirmasi.</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="bank_name">Nama Bank</label>
+                    <input id="bank_name" type="text" name="bank_name" class="form-control" value="{{ old('bank_name', $settings['bank_name']) }}" maxlength="100">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="bank_account_number">Nomor Rekening</label>
+                    <input id="bank_account_number" type="text" name="bank_account_number" class="form-control" value="{{ old('bank_account_number', $settings['bank_account_number']) }}" maxlength="50">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="bank_account_name">Nama Pemilik Rekening</label>
+                    <input id="bank_account_name" type="text" name="bank_account_name" class="form-control" value="{{ old('bank_account_name', $settings['bank_account_name']) }}" maxlength="255">
+                </div>
+                <div class="col-12 mb-4">
+                    <label class="form-label" for="qris_image">Gambar QRIS</label>
+                    @if($settings['qris_image'])
+                        <div class="mb-2"><img src="{{ asset('storage/' . $settings['qris_image']) }}" alt="QRIS pembayaran" style="max-width: 220px; max-height: 220px"></div>
+                    @endif
+                    <input id="qris_image" type="file" name="qris_image" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                    <small class="form-text text-muted">Format JPG, PNG, atau WebP. Maksimal 2 MB. Gambar lama dipertahankan jika tidak memilih file baru.</small>
+                </div>
                 <div class="col-12 mb-4">
                     <label class="form-label" for="site_logo">Logo Website</label>
                     <div class="site-logo-settings">

@@ -141,7 +141,7 @@ class CartController extends Controller
 
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1'],
-            'payment_method' => 'required|in:cash,qris,ewallet,transfer',
+            'payment_method' => 'required|in:cash,qris,transfer',
             'vehicle_id' => [
                 'nullable',
                 'integer',
@@ -216,7 +216,7 @@ class CartController extends Controller
         }
 
         $validated = $request->validate([
-            'payment_method' => 'required|in:cash,qris,ewallet,transfer',
+            'payment_method' => 'required|in:cash,qris,transfer',
             'vehicle_id' => ['sometimes', 'array'],
             'vehicle_id.*' => [
                 'nullable',

@@ -97,6 +97,10 @@ class SettingController extends Controller
             'jam_operasional' => '08:00 - 17:00',
             'deskripsi' => '',
             'site_logo' => null,
+            'bank_name' => '',
+            'bank_account_number' => '',
+            'bank_account_name' => '',
+            'qris_image' => null,
         ], $settings);
 
         return view('backend.admin.settings.general', compact('settings'));
@@ -115,13 +119,23 @@ class SettingController extends Controller
             'jam_operasional' => 'nullable|string',
             'deskripsi' => 'nullable|string',
             'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_account_number' => 'nullable|string|max:50',
+            'bank_account_name' => 'nullable|string|max:255',
+            'qris_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $previousLogo = DB::table('settings')->where('key', 'site_logo')->value('value');
+        $previousQrisImage = DB::table('settings')->where('key', 'qris_image')->value('value');
         if ($request->hasFile('site_logo')) {
             $validated['site_logo'] = $request->file('site_logo')->store('site', 'public');
         } else {
             unset($validated['site_logo']);
+        }
+        if ($request->hasFile('qris_image')) {
+            $validated['qris_image'] = $request->file('qris_image')->store('payment', 'public');
+        } else {
+            unset($validated['qris_image']);
         }
 
         DB::transaction(function () use ($validated) {
@@ -139,6 +153,9 @@ class SettingController extends Controller
 
         if (isset($validated['site_logo']) && $previousLogo) {
             Storage::disk('public')->delete($previousLogo);
+        }
+        if (isset($validated['qris_image']) && $previousQrisImage) {
+            Storage::disk('public')->delete($previousQrisImage);
         }
 
         return back()->with('success', 'Pengaturan usaha dan logo website berhasil diperbarui!');

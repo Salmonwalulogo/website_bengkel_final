@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -131,6 +132,14 @@ class CashierDashboardController extends Controller
     ) {
         $confirmed = DB::transaction(function () use ($request, $payment, $lifecycle, $notifier): bool {
             $transaction = Transaction::query()->findOrFail($payment->transaction_id);
+            if ($transaction->user_id === $transaction->customer_id
+                && in_array($transaction->payment_method, ['transfer', 'qris'], true)
+                && (! $payment->proof_image || ! Storage::disk('local')->exists($payment->proof_image))) {
+                throw ValidationException::withMessages([
+                    'proof_image' => 'Bukti transfer atau QRIS harus tersedia sebelum pembayaran dikonfirmasi.',
+                ]);
+            }
+
             if (! $lifecycle->markPaid($transaction)) {
                 return false;
             }
@@ -151,7 +160,7 @@ class CashierDashboardController extends Controller
 
     public function payments()
     {
-        $payments = Payment::with('transaction')
+        $payments = Payment::with(['transaction.customer', 'transaction.booking.service', 'transaction.details'])
             ->latest('created_at')
             ->latest('id')
             ->paginate(10);
@@ -162,6 +171,13 @@ class CashierDashboardController extends Controller
         $paidPaymentCount = Payment::where('status', 'paid')->count();
 
         return view('backend.cashier.payments', compact('payments', 'pendingPaymentCount', 'paidPaymentCount'));
+    }
+
+    public function paymentProof(Payment $payment)
+    {
+        abort_unless($payment->proof_image && Storage::disk('local')->exists($payment->proof_image), 404);
+
+        return Storage::disk('local')->download($payment->proof_image);
     }
 
     public function invoices()

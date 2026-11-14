@@ -179,14 +179,13 @@
                             <select id="payment_method" name="payment_method" required>
                                 <option value="cash" @selected(old('payment_method') === 'cash')>Tunai</option>
                                 <option value="qris" @selected(old('payment_method') === 'qris')>QRIS</option>
-                                <option value="ewallet" @selected(old('payment_method') === 'ewallet')>E-Wallet</option>
                                 <option value="transfer" @selected(old('payment_method') === 'transfer')>Transfer Bank</option>
                             </select>
                             <button class="cart-primary-button cart-checkout-button" type="submit">
                                 Kirim pesanan <i class="bi bi-arrow-right" aria-hidden="true"></i>
                             </button>
                         </form>
-                        <p class="cart-checkout-note"><i class="bi bi-info-circle" aria-hidden="true"></i> Pembayaran akan dikonfirmasi admin setelah pesanan ditinjau.</p>
+                        <p class="cart-checkout-note"><i class="bi bi-info-circle" aria-hidden="true"></i> Untuk transfer/QRIS, kirim pesanan lalu unggah bukti dari menu Transaksi Saya. Tunai dibayar saat serah-terima.</p>
                     @else
                         <div class="cart-role-notice"><i class="bi bi-person-lock" aria-hidden="true"></i><span>Checkout hanya tersedia untuk akun pelanggan.</span></div>
                     @endif

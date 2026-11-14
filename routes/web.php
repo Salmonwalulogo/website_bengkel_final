@@ -190,7 +190,11 @@ Route::middleware(['auth', 'active', 'role:customer'])->prefix('customer')->name
     Route::post('/booking', [CustomerDashboardController::class, 'storeBooking'])->name('booking.store');
     Route::get('/pesanan', [CustomerDashboardController::class, 'bookings'])->name('bookings');
     Route::patch('/pesanan/{booking}/batal', [CustomerDashboardController::class, 'cancelBooking'])->name('bookings.cancel');
+    Route::get('/pesanan/{booking}/pembayaran', [CustomerDashboardController::class, 'createBookingPayment'])->name('bookings.payment');
+    Route::post('/pesanan/{booking}/pembayaran', [CustomerDashboardController::class, 'storeBookingPayment'])->name('bookings.payment.store');
     Route::get('/transaksi', [CustomerDashboardController::class, 'transactions'])->name('transactions');
+    Route::get('/transaksi/{transaction}/pembayaran', [CustomerDashboardController::class, 'createTransactionPayment'])->name('transactions.payment');
+    Route::post('/transaksi/{transaction}/pembayaran', [CustomerDashboardController::class, 'storeTransactionPayment'])->name('transactions.payment.store');
     Route::get('/notifikasi', [CustomerDashboardController::class, 'notifications'])->name('notifications');
     Route::post('/notifikasi/{notification}/read', [CustomerDashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
 });
@@ -207,6 +211,7 @@ Route::middleware(['auth', 'active', 'role:kasir'])->prefix('kasir')->name('kasi
     Route::post('/pesanan/{booking}/pembayaran', [CashierDashboardController::class, 'payServiceBooking'])->name('orders.pay');
     Route::get('/pembayaran', [CashierDashboardController::class, 'payments'])->name('payments');
     Route::patch('/pembayaran/{payment}/konfirmasi', [CashierDashboardController::class, 'confirmPayment'])->name('payments.confirm');
+    Route::get('/pembayaran/{payment}/bukti', [CashierDashboardController::class, 'paymentProof'])->name('payments.proof');
     Route::get('/invoice', [CashierDashboardController::class, 'invoices'])->name('invoices');
     Route::get('/transaksi', [CashierDashboardController::class, 'pos'])->name('pos');
     Route::get('/transaksi/produk', [CashierDashboardController::class, 'productCatalog'])->name('pos.products');

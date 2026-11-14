@@ -7,11 +7,15 @@ use App\Models\Booking;
 use App\Models\Notification;
 use App\Models\Product;
 use App\Models\Service;
+use App\Models\Transaction;
 use App\Services\AdminOrderNotifier;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class CustomerDashboardController extends Controller
 {
@@ -131,6 +135,132 @@ class CustomerDashboardController extends Controller
         return view('backend.customer.bookings', compact('bookings'));
     }
 
+    public function createBookingPayment(Booking $booking)
+    {
+        abort_unless($booking->user_id === Auth::id(), 404);
+        $booking->load(['service', 'transaction.payment']);
+
+        abort_unless(
+            in_array($booking->status, ['confirmed', 'completed'], true),
+            422,
+            'Pembayaran tersedia setelah harga dan pesanan dikonfirmasi admin.'
+        );
+
+        $settings = DB::table('settings')->pluck('value', 'key')->all();
+        $amount = (float) ($booking->quoted_price ?? $booking->service->harga);
+
+        return view('backend.customer.booking-payment', compact('booking', 'settings', 'amount'));
+    }
+
+    public function storeBookingPayment(Request $request, Booking $booking)
+    {
+        abort_unless($booking->user_id === Auth::id(), 404);
+
+        $validated = $request->validate([
+            'payment_method' => ['required', Rule::in(['transfer', 'qris'])],
+            'proof_image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+        ]);
+
+        $booking->load('service');
+        abort_unless(
+            in_array($booking->status, ['confirmed', 'completed'], true),
+            422,
+            'Pembayaran tersedia setelah harga dan pesanan dikonfirmasi admin.'
+        );
+
+        $settings = DB::table('settings')->pluck('value', 'key')->all();
+        if ($validated['payment_method'] === 'transfer'
+            && (empty($settings['bank_name']) || empty($settings['bank_account_number']) || empty($settings['bank_account_name']))) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'Informasi rekening transfer belum diatur oleh admin.',
+            ]);
+        }
+        if ($validated['payment_method'] === 'qris' && empty($settings['qris_image'])) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'QRIS belum diatur oleh admin.',
+            ]);
+        }
+
+        $proofPath = $request->file('proof_image')->store('payment-proofs', 'local');
+        $oldProofPath = null;
+        try {
+            DB::transaction(function () use ($booking, $validated, $request, $proofPath, &$oldProofPath) {
+                $lockedBooking = Booking::query()->lockForUpdate()->findOrFail($booking->id);
+                if (! in_array($lockedBooking->status, ['confirmed', 'completed'], true)) {
+                    throw ValidationException::withMessages([
+                        'booking' => 'Pesanan ini tidak dapat dibayar karena statusnya sudah berubah.',
+                    ]);
+                }
+                $lockedBooking->load('service');
+                $amount = (float) ($lockedBooking->quoted_price ?? $lockedBooking->service->harga);
+                if ($amount <= 0) {
+                    throw ValidationException::withMessages([
+                        'booking' => 'Admin harus menetapkan harga layanan sebelum pembayaran.',
+                    ]);
+                }
+
+                $transaction = $lockedBooking->transaction()->lockForUpdate()->first();
+                if ($transaction && ($transaction->status !== 'pending'
+                    || $transaction->payment()->where('status', 'paid')->exists())) {
+                    throw ValidationException::withMessages([
+                        'booking' => 'Pembayaran untuk pesanan ini sudah selesai atau tidak dapat diubah.',
+                    ]);
+                }
+
+                if (! $transaction) {
+                    $transaction = $lockedBooking->transaction()->create([
+                        'user_id' => $request->user()->id,
+                        'customer_id' => $request->user()->id,
+                        'checkout_token' => (string) Str::uuid(),
+                        'subtotal' => $amount,
+                        'discount' => 0,
+                        'tax' => 0,
+                        'other_fee' => 0,
+                        'total_payment' => $amount,
+                        'paid_amount' => 0,
+                        'change_amount' => 0,
+                        'payment_method' => $validated['payment_method'],
+                        'status' => 'pending',
+                    ]);
+                } else {
+                    $transaction->update(['payment_method' => $validated['payment_method']]);
+                }
+
+                $payment = $transaction->payment()->lockForUpdate()->first();
+                if ($payment && $payment->status !== 'pending') {
+                    throw ValidationException::withMessages([
+                        'booking' => 'Status pembayaran sudah berubah dan tidak dapat diperbarui.',
+                    ]);
+                }
+
+                $oldProofPath = $payment?->proof_image;
+                $paymentData = [
+                    'amount' => $amount,
+                    'payment_date' => null,
+                    'status' => 'pending',
+                    'proof_image' => $proofPath,
+                ];
+                if ($payment) {
+                    $payment->update($paymentData);
+                } else {
+                    $transaction->payment()->create(array_merge($paymentData, [
+                        'payment_code' => 'PAY-' . strtoupper(Str::random(12)),
+                    ]));
+                }
+            });
+        } catch (\Throwable $exception) {
+            Storage::disk('local')->delete($proofPath);
+            throw $exception;
+        }
+
+        if ($oldProofPath) {
+            Storage::disk('local')->delete($oldProofPath);
+        }
+
+        return redirect()->route('customer.bookings')
+            ->with('success', 'Bukti pembayaran terkirim. Pembayaran menunggu verifikasi kasir.');
+    }
+
     public function cancelBooking(Booking $booking)
     {
         abort_unless($booking->user_id === Auth::id(), 404);
@@ -149,6 +279,88 @@ class CustomerDashboardController extends Controller
     {
         $transactions = Auth::user()->customerTransactions()->with(['payment', 'booking.service', 'details'])->latest()->paginate(10);
         return view('backend.customer.transactions', compact('transactions'));
+    }
+
+    public function createTransactionPayment(Transaction $transaction)
+    {
+        $transaction = Auth::user()->customerTransactions()
+            ->whereNull('booking_id')
+            ->with(['payment', 'details'])
+            ->findOrFail($transaction->id);
+
+        abort_unless(
+            $transaction->status === 'pending' && $transaction->payment?->status === 'pending',
+            422,
+            'Pembayaran ini sudah selesai atau tidak dapat diubah.'
+        );
+
+        $settings = DB::table('settings')->pluck('value', 'key')->all();
+        $amount = (float) $transaction->total_payment;
+
+        return view('backend.customer.transaction-payment', compact('transaction', 'settings', 'amount'));
+    }
+
+    public function storeTransactionPayment(Request $request, Transaction $transaction)
+    {
+        $transaction = Auth::user()->customerTransactions()
+            ->whereNull('booking_id')
+            ->findOrFail($transaction->id);
+
+        $validated = $request->validate([
+            'payment_method' => ['required', Rule::in(['transfer', 'qris'])],
+            'proof_image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+        ]);
+
+        $settings = DB::table('settings')->pluck('value', 'key')->all();
+        if ($validated['payment_method'] === 'transfer'
+            && (empty($settings['bank_name']) || empty($settings['bank_account_number']) || empty($settings['bank_account_name']))) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'Informasi rekening transfer belum diatur oleh admin.',
+            ]);
+        }
+        if ($validated['payment_method'] === 'qris' && empty($settings['qris_image'])) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'QRIS belum diatur oleh admin.',
+            ]);
+        }
+
+        $proofPath = $request->file('proof_image')->store('payment-proofs', 'local');
+        $oldProofPath = null;
+        try {
+            DB::transaction(function () use ($transaction, $validated, $proofPath, &$oldProofPath) {
+                $lockedTransaction = Transaction::query()
+                    ->where('customer_id', Auth::id())
+                    ->whereNull('booking_id')
+                    ->lockForUpdate()
+                    ->findOrFail($transaction->id);
+                $payment = $lockedTransaction->payment()->lockForUpdate()->first();
+
+                if ($lockedTransaction->status !== 'pending' || ! $payment || $payment->status !== 'pending') {
+                    throw ValidationException::withMessages([
+                        'payment' => 'Pembayaran ini sudah selesai atau tidak dapat diubah.',
+                    ]);
+                }
+
+                $oldProofPath = $payment->proof_image;
+                $payment->update([
+                    'amount' => $lockedTransaction->total_payment,
+                    'payment_date' => null,
+                    'status' => 'pending',
+                    'proof_image' => $proofPath,
+                ]);
+                $lockedTransaction->update(['payment_method' => $validated['payment_method']]);
+            });
+        } catch (\Throwable $exception) {
+            Storage::disk('local')->delete($proofPath);
+            throw $exception;
+        }
+
+        if ($oldProofPath) {
+            Storage::disk('local')->delete($oldProofPath);
+        }
+
+        return redirect()->route('customer.transactions')
+            ->with('success', 'Bukti pembayaran terkirim. Pembayaran menunggu verifikasi kasir.');
     }
 
     public function notifications()

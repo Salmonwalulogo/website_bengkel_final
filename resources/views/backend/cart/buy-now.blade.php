@@ -114,7 +114,6 @@
                         <select id="payment_method" name="payment_method" class="form-select" required>
                             <option value="cash" @selected(old('payment_method') === 'cash')>Tunai</option>
                             <option value="qris" @selected(old('payment_method') === 'qris')>QRIS</option>
-                            <option value="ewallet" @selected(old('payment_method') === 'ewallet')>E-Wallet</option>
                             <option value="transfer" @selected(old('payment_method') === 'transfer')>Transfer Bank</option>
                         </select>
                         @error('payment_method')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
@@ -129,7 +128,7 @@
                         <i class="bi bi-lock me-2" aria-hidden="true"></i>Konfirmasi Pesanan
                     </button>
                     <p class="small text-secondary text-center mt-3 mb-0">
-                        <i class="bi bi-shield-check me-1" aria-hidden="true"></i>Pesanan Anda akan diproses dengan aman.
+                        <i class="bi bi-shield-check me-1" aria-hidden="true"></i>Untuk transfer/QRIS, unggah bukti dari menu Transaksi Saya setelah memesan. Tunai dibayar saat serah-terima.
                     </p>
                 </form>
             </section>
