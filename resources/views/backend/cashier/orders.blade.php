@@ -22,6 +22,7 @@
                             <th>Tanggal</th>
                             <th>Status</th>
                             <th>Pembayaran</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -36,6 +37,9 @@
                             <td>
                                 @if($booking->transaction?->payment?->status === 'paid')
                                     <span class="badge bg-success">Lunas · {{ $booking->transaction->invoice_number }}</span>
+                                @elseif($booking->transaction?->payment?->status === 'pending')
+                                    <span class="badge bg-warning text-dark">Menunggu verifikasi</span>
+                                    <a href="{{ route('kasir.payments') }}" class="btn btn-sm btn-outline-primary d-block mt-1">Buka pembayaran</a>
                                 @elseif(in_array($booking->status, ['confirmed', 'completed'], true) && (float) ($booking->quoted_price ?? $booking->service->harga ?? 0) > 0)
                                     <form action="{{ route('kasir.orders.pay', $booking) }}" method="POST" class="d-flex flex-wrap gap-2">
                                         @csrf
@@ -53,10 +57,11 @@
                                     <span class="text-muted small">Menunggu konfirmasi admin</span>
                                 @endif
                             </td>
+                            <td><a href="{{ route('kasir.orders.show', $booking) }}" class="btn btn-sm btn-outline-secondary">Melihat Detail</a></td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">Belum ada permintaan layanan.</td>
+                            <td colspan="8" class="text-center text-muted py-4">Belum ada permintaan layanan.</td>
                         </tr>
                         @endforelse
                     </tbody>

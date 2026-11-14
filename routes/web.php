@@ -208,6 +208,7 @@ Route::middleware(['auth', 'active', 'role:customer'])->prefix('customer')->name
 Route::middleware(['auth', 'active', 'role:kasir'])->prefix('kasir')->name('kasir.')->group(function () {
     Route::get('/dashboard', [CashierDashboardController::class, 'index'])->name('dashboard');
     Route::get('/pesanan', [CashierDashboardController::class, 'orders'])->name('orders');
+    Route::get('/pesanan/{booking}', [CashierDashboardController::class, 'showOrder'])->name('orders.show');
     Route::post('/pesanan/{booking}/pembayaran', [CashierDashboardController::class, 'payServiceBooking'])->name('orders.pay');
     Route::get('/pembayaran', [CashierDashboardController::class, 'payments'])->name('payments');
     Route::patch('/pembayaran/{payment}/konfirmasi', [CashierDashboardController::class, 'confirmPayment'])->name('payments.confirm');

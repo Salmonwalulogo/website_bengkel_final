@@ -44,6 +44,13 @@ class CashierDashboardController extends Controller
         return view('backend.cashier.orders', compact('bookings'));
     }
 
+    public function showOrder(Booking $booking)
+    {
+        $booking->load(['user', 'vehicle', 'service', 'transaction.payment']);
+
+        return view('backend.cashier.order-details', compact('booking'));
+    }
+
     public function payServiceBooking(
         Request $request,
         Booking $booking,

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -9,6 +11,43 @@ use Tests\TestCase;
 class CashierNavigationTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_cashier_can_open_a_booking_detail_from_their_order_list(): void
+    {
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $service = Service::create([
+            'name' => 'Servis Berkala',
+            'category' => 'Servis',
+            'harga' => 150000,
+            'status' => 'active',
+        ]);
+        $booking = Booking::create([
+            'user_id' => $customer->id,
+            'service_id' => $service->id,
+            'booking_date' => now()->addDay()->toDateString(),
+            'booking_time' => '09:00',
+            'request_details' => 'Periksa rem depan',
+            'status' => 'confirmed',
+        ]);
+
+        $this->actingAs($cashier)
+            ->get(route('kasir.orders'))
+            ->assertOk()
+            ->assertSee(route('kasir.orders.show', $booking))
+            ->assertSee('Melihat Detail');
+
+        $this->get(route('kasir.orders.show', $booking))
+            ->assertOk()
+            ->assertSee('Detail Booking')
+            ->assertSee($customer->name)
+            ->assertSee('Servis Berkala')
+            ->assertSee('Periksa rem depan');
+
+        $this->actingAs($customer)
+            ->get(route('kasir.orders.show', $booking))
+            ->assertForbidden();
+    }
 
     public function test_cashier_dashboard_links_to_available_cashier_pages(): void
     {
