@@ -23,6 +23,7 @@
 <body class="backend-page" data-user-role="{{ auth()->user()->role }}" data-authenticated="true">
     <div class="sidebar" id="cashier-sidebar">
         @php($pendingPaymentsCount = \App\Models\Payment::query()->where('status', 'pending')->count())
+        @php($unreadNotificationsCount = auth()->user()->notifications()->unread()->count())
         <a href="{{ route('home') }}" class="sidebar-brand">
             <img src="{{ $siteLogoUrl }}" alt="Logo UD Rumah Daun">
             <span><strong>UD RUMAH DAUN</strong><small>AREA KASIR</small></span>
@@ -54,6 +55,14 @@
                             <i class="fas fa-money-bill-wave"></i><span>Pembayaran</span>
                             @if($pendingPaymentsCount > 0)
                                 <span class="badge rounded-pill bg-warning text-dark ms-1" aria-label="{{ $pendingPaymentsCount }} pembayaran menunggu konfirmasi">{{ $pendingPaymentsCount }}</span>
+                            @endif
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('kasir.notifications') }}" class="nav-link {{ request()->routeIs('kasir.notifications*') ? 'active' : '' }}">
+                            <i class="fas fa-bell"></i><span>Notifikasi</span>
+                            @if($unreadNotificationsCount > 0)
+                                <span class="badge rounded-pill bg-danger ms-1" aria-label="{{ $unreadNotificationsCount }} notifikasi belum dibaca">{{ $unreadNotificationsCount }}</span>
                             @endif
                         </a>
                     </li>

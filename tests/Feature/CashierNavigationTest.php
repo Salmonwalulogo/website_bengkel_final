@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\Notification;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,5 +65,39 @@ class CashierNavigationTest extends TestCase
             ->assertSee(route('kasir.payments'))
             ->assertSee(route('kasir.invoices'))
             ->assertSee(route('profile.edit'));
+    }
+
+    public function test_cashier_can_view_and_mark_only_own_order_notifications_as_read(): void
+    {
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $anotherCashier = User::factory()->create(['role' => 'kasir']);
+        $notification = Notification::create([
+            'user_id' => $cashier->id,
+            'title' => 'Permintaan layanan baru',
+            'message' => 'Pelanggan memesan layanan.',
+            'type' => 'booking',
+            'is_read' => false,
+        ]);
+        $anotherNotification = Notification::create([
+            'user_id' => $anotherCashier->id,
+            'title' => 'Notifikasi kasir lain',
+            'message' => 'Tidak boleh terlihat.',
+            'type' => 'booking',
+            'is_read' => false,
+        ]);
+
+        $this->actingAs($cashier)
+            ->get(route('kasir.notifications'))
+            ->assertOk()
+            ->assertSee('Permintaan layanan baru')
+            ->assertDontSee('Notifikasi kasir lain')
+            ->assertSee(route('kasir.notifications.read', $notification));
+
+        $this->post(route('kasir.notifications.read', $notification))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('notifications', ['id' => $notification->id, 'is_read' => true]);
+        $this->assertDatabaseHas('notifications', ['id' => $anotherNotification->id, 'is_read' => false]);
     }
 }

@@ -100,13 +100,17 @@
                         </td>
                         <td class="text-end">
                             @if($payment->status === 'pending' && $payment->transaction?->status === 'pending')
-                                <form action="{{ route('kasir.payments.confirm', $payment) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="payment-confirm-button">
-                                        <i class="fas fa-check" aria-hidden="true"></i>Konfirmasi
-                                    </button>
-                                </form>
+                                @if(in_array($payment->transaction?->payment_method, ['transfer', 'qris'], true) && !$payment->proof_image)
+                                    <span class="text-muted small">Menunggu bukti pelanggan</span>
+                                @else
+                                    <form action="{{ route('kasir.payments.confirm', $payment) }}" method="POST" class="d-inline" onsubmit="return confirm('Pastikan pembayaran sudah diterima dan bukti transfer/QRIS sudah diperiksa. Lanjutkan konfirmasi?');">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="payment-confirm-button">
+                                            <i class="fas fa-check" aria-hidden="true"></i>Konfirmasi
+                                        </button>
+                                    </form>
+                                @endif
                             @elseif($payment->status === 'paid')
                                 <span class="payment-confirmed"><i class="fas fa-check" aria-hidden="true"></i>Terverifikasi</span>
                             @else

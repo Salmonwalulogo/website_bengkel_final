@@ -41,15 +41,11 @@
                                     <span class="badge bg-warning text-dark">Menunggu verifikasi</span>
                                     <a href="{{ route('kasir.payments') }}" class="btn btn-sm btn-outline-primary d-block mt-1">Buka pembayaran</a>
                                 @elseif(in_array($booking->status, ['confirmed', 'completed'], true) && (float) ($booking->quoted_price ?? $booking->service->harga ?? 0) > 0)
-                                    <form action="{{ route('kasir.orders.pay', $booking) }}" method="POST" class="d-flex flex-wrap gap-2">
+                                    <form action="{{ route('kasir.orders.pay', $booking) }}" method="POST" class="d-flex flex-wrap gap-2" onsubmit="return confirm('Konfirmasi bahwa pembayaran tunai Rp {{ number_format($booking->quoted_price ?? $booking->service->harga, 0, ',', '.') }} sudah benar-benar diterima langsung dari pelanggan?');">
                                         @csrf
-                                        <select name="payment_method" class="form-select form-select-sm" aria-label="Metode pembayaran">
-                                            <option value="cash">Tunai</option>
-                                            <option value="qris">QRIS</option>
-                                            <option value="transfer">Transfer</option>
-                                            <option value="ewallet">E-Wallet</option>
-                                        </select>
-                                        <button class="btn btn-sm btn-success" type="submit">Konfirmasi pembayaran · Rp {{ number_format($booking->quoted_price ?? $booking->service->harga, 0, ',', '.') }}</button>
+                                        <input type="hidden" name="payment_method" value="cash">
+                                        <button class="btn btn-sm btn-success" type="submit">Catat tunai diterima · Rp {{ number_format($booking->quoted_price ?? $booking->service->harga, 0, ',', '.') }}</button>
+                                        <small class="text-muted w-100">Untuk transfer/QRIS, pelanggan mengirim bukti dan kasir memverifikasi di menu Pembayaran.</small>
                                     </form>
                                 @elseif(in_array($booking->status, ['confirmed', 'completed'], true))
                                     <span class="text-muted small">Admin perlu menetapkan harga</span>

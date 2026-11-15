@@ -213,6 +213,9 @@ Route::middleware(['auth', 'active', 'role:kasir'])->prefix('kasir')->name('kasi
     Route::get('/pembayaran', [CashierDashboardController::class, 'payments'])->name('payments');
     Route::patch('/pembayaran/{payment}/konfirmasi', [CashierDashboardController::class, 'confirmPayment'])->name('payments.confirm');
     Route::get('/pembayaran/{payment}/bukti', [CashierDashboardController::class, 'paymentProof'])->name('payments.proof');
+    Route::get('/notifikasi', [CashierDashboardController::class, 'notifications'])->name('notifications');
+    Route::post('/notifikasi/{notification}/read', [CashierDashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
+    Route::post('/notifikasi/read-all', [CashierDashboardController::class, 'markAllNotificationsAsRead'])->name('notifications.markAllAsRead');
     Route::get('/invoice', [CashierDashboardController::class, 'invoices'])->name('invoices');
     Route::get('/transaksi', [CashierDashboardController::class, 'pos'])->name('pos');
     Route::get('/transaksi/produk', [CashierDashboardController::class, 'productCatalog'])->name('pos.products');

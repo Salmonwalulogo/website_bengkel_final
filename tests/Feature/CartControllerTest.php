@@ -379,6 +379,12 @@ class CartControllerTest extends TestCase
             'type' => 'payment',
             'is_read' => false,
         ]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $cashier->id,
+            'title' => 'Pesanan produk baru',
+            'type' => 'payment',
+            'is_read' => false,
+        ]);
 
         $transaction = \App\Models\Transaction::where('customer_id', $customer->id)->firstOrFail();
         $payment = $transaction->payment;

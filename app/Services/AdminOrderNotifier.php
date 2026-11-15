@@ -14,7 +14,7 @@ class AdminOrderNotifier
     {
         $booking->loadMissing(['user', 'service']);
 
-        $this->notifyAdmins(
+        $this->notifyStaff(
             'Permintaan layanan baru',
             "{$booking->user->name} memesan layanan {$booking->service->name} untuk {$booking->booking_date->format('d/m/Y')} pukul {$booking->booking_time}.",
             'booking',
@@ -29,7 +29,7 @@ class AdminOrderNotifier
             ->map(fn ($detail) => ($detail->product_name ?? 'Produk') . ' (' . $detail->quantity . ')')
             ->implode(', ');
 
-        $this->notifyAdmins(
+        $this->notifyStaff(
             'Pesanan produk baru',
             "{$transaction->customer->name} mengirim pesanan {$transaction->invoice_number}: {$products}.",
             'payment',
@@ -65,6 +65,13 @@ class AdminOrderNotifier
     private function notifyAdmins(string $title, string $message, string $type): void
     {
         $this->notifyUsersWithRole('admin', $title, $message, $type);
+    }
+
+    private function notifyStaff(string $title, string $message, string $type): void
+    {
+        foreach (['admin', 'kasir'] as $role) {
+            $this->notifyUsersWithRole($role, $title, $message, $type);
+        }
     }
 
     private function notifyUsersWithRole(string $role, string $title, string $message, string $type): void

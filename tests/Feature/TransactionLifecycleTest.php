@@ -76,7 +76,8 @@ class TransactionLifecycleTest extends TestCase
 
         $this->actingAs($cashier)
             ->patch(route('kasir.payments.confirm', $payment))
-            ->assertRedirect(route('kasir.payments'));
+            ->assertRedirect(route('kasir.payments'))
+            ->assertSessionHas('success');
         $this->patch(route('kasir.payments.confirm', $payment))
             ->assertRedirect(route('kasir.payments'))
             ->assertSessionHas('info');
@@ -96,6 +97,28 @@ class TransactionLifecycleTest extends TestCase
             ->patch(route('kasir.payments.confirm', $payment))
             ->assertRedirect(route('kasir.payments'))
             ->assertSessionHasErrors('amount');
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'pending']);
+        $this->assertDatabaseHas('transactions', ['id' => $transaction->id, 'status' => 'pending']);
+    }
+
+    public function test_cashier_cannot_confirm_transfer_payment_without_uploaded_proof(): void
+    {
+        [, $transaction, $payment] = $this->createPendingProductTransaction();
+        $transaction->update(['payment_method' => 'transfer']);
+        $cashier = User::findOrFail($transaction->user_id);
+
+        $this->actingAs($cashier)
+            ->get(route('kasir.payments'))
+            ->assertOk()
+            ->assertSee('Menunggu bukti pelanggan')
+            ->assertDontSee(route('kasir.payments.confirm', $payment));
+
+        $this->actingAs($cashier)
+            ->from(route('kasir.payments'))
+            ->patch(route('kasir.payments.confirm', $payment))
+            ->assertRedirect(route('kasir.payments'))
+            ->assertSessionHasErrors('proof_image');
 
         $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'pending']);
         $this->assertDatabaseHas('transactions', ['id' => $transaction->id, 'status' => 'pending']);
@@ -149,7 +172,7 @@ class TransactionLifecycleTest extends TestCase
             'user_id' => $cashier->id,
             'subtotal' => 230,
             'total_payment' => 230,
-            'payment_method' => 'transfer',
+            'payment_method' => 'cash',
             'status' => 'pending',
         ]);
         $newPayment = Payment::create([
@@ -208,7 +231,7 @@ class TransactionLifecycleTest extends TestCase
             'customer_id' => $customer->id,
             'subtotal' => 200,
             'total_payment' => 200,
-            'payment_method' => 'transfer',
+            'payment_method' => 'cash',
             'status' => 'pending',
         ]);
         $transaction->details()->create([

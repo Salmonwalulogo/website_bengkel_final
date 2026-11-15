@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cashier;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Notification;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\TransactionDetail;
@@ -59,7 +60,7 @@ class CashierDashboardController extends Controller
     )
     {
         $validated = $request->validate([
-            'payment_method' => ['required', 'in:cash,qris,ewallet,transfer'],
+            'payment_method' => ['required', 'in:cash'],
         ]);
 
         $result = DB::transaction(function () use ($booking, $validated, $request, $notifier, $lifecycle) {
@@ -78,6 +79,11 @@ class CashierDashboardController extends Controller
                 $payment = $existingTransaction->payment()->lockForUpdate()->first();
                 if ($existingTransaction->status === 'completed' && $payment?->status === 'paid') {
                     return $existingTransaction;
+                }
+                if ($payment?->proof_image) {
+                    throw ValidationException::withMessages([
+                        'payment_method' => 'Bukti pembayaran online sudah dikirim. Verifikasi melalui halaman Pembayaran, jangan catat ulang sebagai tunai.',
+                    ]);
                 }
 
                 $existingTransaction->update(['payment_method' => $validated['payment_method']]);
@@ -139,8 +145,7 @@ class CashierDashboardController extends Controller
     ) {
         $confirmed = DB::transaction(function () use ($request, $payment, $lifecycle, $notifier): bool {
             $transaction = Transaction::query()->findOrFail($payment->transaction_id);
-            if ($transaction->user_id === $transaction->customer_id
-                && in_array($transaction->payment_method, ['transfer', 'qris'], true)
+            if (in_array($transaction->payment_method, ['transfer', 'qris'], true)
                 && (! $payment->proof_image || ! Storage::disk('local')->exists($payment->proof_image))) {
                 throw ValidationException::withMessages([
                     'proof_image' => 'Bukti transfer atau QRIS harus tersedia sebelum pembayaran dikonfirmasi.',
@@ -178,6 +183,32 @@ class CashierDashboardController extends Controller
         $paidPaymentCount = Payment::where('status', 'paid')->count();
 
         return view('backend.cashier.payments', compact('payments', 'pendingPaymentCount', 'paidPaymentCount'));
+    }
+
+    public function notifications(Request $request)
+    {
+        $notifications = $request->user()->notifications()->latest()->paginate(15);
+        $unreadNotificationCount = $request->user()->notifications()->unread()->count();
+
+        return view('backend.cashier.notifications', compact('notifications', 'unreadNotificationCount'));
+    }
+
+    public function markNotificationAsRead(Request $request, Notification $notification)
+    {
+        abort_unless($notification->user_id === $request->user()->id, 404);
+        $notification->update(['is_read' => true]);
+
+        return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
+    }
+
+    public function markAllNotificationsAsRead(Request $request)
+    {
+        $updatedCount = $request->user()->notifications()->unread()->update(['is_read' => true]);
+
+        return back()->with(
+            'success',
+            $updatedCount > 0 ? 'Semua notifikasi telah ditandai sudah dibaca.' : 'Tidak ada notifikasi baru.'
+        );
     }
 
     public function paymentProof(Payment $payment)

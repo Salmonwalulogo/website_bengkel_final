@@ -8,6 +8,7 @@ use App\Models\Service;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class CashierServiceBookingPaymentTest extends TestCase
@@ -36,7 +37,7 @@ class CashierServiceBookingPaymentTest extends TestCase
         ]);
 
         $this->actingAs($cashier)
-            ->post(route('kasir.orders.pay', $booking), ['payment_method' => 'transfer'])
+            ->post(route('kasir.orders.pay', $booking), ['payment_method' => 'cash'])
             ->assertRedirect(route('kasir.orders'))
             ->assertSessionHas('success');
 
@@ -45,7 +46,7 @@ class CashierServiceBookingPaymentTest extends TestCase
             'customer_id' => $customer->id,
             'booking_id' => $booking->id,
             'total_payment' => 325000,
-            'payment_method' => 'transfer',
+            'payment_method' => 'cash',
         ]);
         $this->assertDatabaseHas('payments', [
             'amount' => 325000,
@@ -80,7 +81,7 @@ class CashierServiceBookingPaymentTest extends TestCase
         $this->actingAs($cashier)
             ->get(route('kasir.orders'))
             ->assertOk()
-            ->assertSee('Konfirmasi pembayaran · Rp 175.000')
+            ->assertSee('Catat tunai diterima · Rp 175.000')
             ->assertSee(route('kasir.orders.pay', $booking));
 
         $this->post(route('kasir.orders.pay', $booking), ['payment_method' => 'cash'])
@@ -203,5 +204,114 @@ class CashierServiceBookingPaymentTest extends TestCase
 
         $this->assertDatabaseCount('transactions', 0);
         $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_cashier_cannot_mark_a_service_paid_by_transfer_or_qris_without_verification(): void
+    {
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $service = Service::create([
+            'name' => 'Tune Up',
+            'category' => 'Servis',
+            'harga' => 100000,
+            'status' => 'active',
+        ]);
+        $booking = Booking::create([
+            'user_id' => $customer->id,
+            'service_id' => $service->id,
+            'booking_date' => now()->addDay()->toDateString(),
+            'booking_time' => '09:00',
+            'quoted_price' => 100000,
+            'status' => 'confirmed',
+        ]);
+
+        foreach (['transfer', 'qris'] as $method) {
+            $this->actingAs($cashier)
+                ->from(route('kasir.orders'))
+                ->post(route('kasir.orders.pay', $booking), ['payment_method' => $method])
+                ->assertRedirect(route('kasir.orders'))
+                ->assertSessionHasErrors('payment_method');
+        }
+
+        $this->assertDatabaseCount('transactions', 0);
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_cashier_cannot_record_an_online_payment_with_proof_as_cash(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $service = Service::create([
+            'name' => 'Ganti Oli',
+            'category' => 'Servis',
+            'harga' => 100000,
+            'status' => 'active',
+        ]);
+        $booking = Booking::create([
+            'user_id' => $customer->id,
+            'service_id' => $service->id,
+            'booking_date' => now()->addDay()->toDateString(),
+            'booking_time' => '09:00',
+            'quoted_price' => 100000,
+            'status' => 'confirmed',
+        ]);
+        $transaction = Transaction::create([
+            'user_id' => $customer->id,
+            'customer_id' => $customer->id,
+            'booking_id' => $booking->id,
+            'subtotal' => 100000,
+            'total_payment' => 100000,
+            'payment_method' => 'transfer',
+            'status' => 'pending',
+        ]);
+        $payment = Payment::create([
+            'transaction_id' => $transaction->id,
+            'payment_code' => 'PAY-SERVICE-PROOF',
+            'amount' => 100000,
+            'status' => 'pending',
+            'proof_image' => 'payment-proofs/service-proof.png',
+        ]);
+        \Illuminate\Support\Facades\Storage::disk('local')->put($payment->proof_image, 'proof');
+
+        $this->actingAs($cashier)
+            ->from(route('kasir.orders'))
+            ->post(route('kasir.orders.pay', $booking), ['payment_method' => 'cash'])
+            ->assertRedirect(route('kasir.orders'))
+            ->assertSessionHasErrors('payment_method');
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'pending']);
+        $this->assertDatabaseHas('transactions', ['id' => $transaction->id, 'status' => 'pending']);
+    }
+
+    public function test_customer_service_booking_notifies_admin_and_cashier(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $service = Service::create([
+            'name' => 'Servis Rutin',
+            'category' => 'Servis',
+            'harga' => 100000,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($customer)
+            ->post(route('customer.booking.store'), [
+                'service_id' => $service->id,
+                'booking_date' => Carbon::tomorrow()->toDateString(),
+                'booking_time' => '09:00',
+                'request_details' => 'Periksa kondisi kendaraan',
+            ])
+            ->assertRedirect(route('customer.bookings'));
+
+        foreach ([$admin, $cashier] as $staff) {
+            $this->assertDatabaseHas('notifications', [
+                'user_id' => $staff->id,
+                'title' => 'Permintaan layanan baru',
+                'type' => 'booking',
+                'is_read' => false,
+            ]);
+        }
     }
 }
