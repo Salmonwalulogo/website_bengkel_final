@@ -20,7 +20,11 @@
 <body class="frontend-page" data-user-role="{{ auth()->user()?->role ?? 'guest' }}" data-authenticated="{{ auth()->check() ? 'true' : 'false' }}">
     @include('frontend.partials.navigation')
 
-    <section class="hero" id="beranda">
+    <section
+        class="hero"
+        id="beranda"
+        style="--hero-background-image: url('{{ asset('images/ud-rumah-daun-storefront.jpeg') }}')"
+    >
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
@@ -103,9 +107,7 @@
         <div class="container">
             <div class="about-content">
                 <div class="about-image" data-aos="fade-right">
-                    <div class="about-illustration">
-                        <i class="bi bi-shop about-illustration-icon"></i>
-                    </div>
+                    <img src="{{ asset('images/ud-rumah-daun-storefront.jpeg') }}" alt="Tampak depan UD Rumah Daun" class="about-storefront-image">
                 </div>
                 <div class="about-text" data-aos="fade-left">
                     <span class="section-tag">

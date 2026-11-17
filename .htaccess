@@ -1,0 +1,33 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Keep the application entry point in the project root.
+    RewriteRule ^index\.php$ - [L,NC]
+
+    # Allow files already rewritten into the public directory to be served.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^public/ - [L]
+
+    # Block dotfiles such as .env and .git, except ACME challenge files.
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
+
+    # Serve uploaded files only through the public storage link.
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(storage/.+)$ public/$1 [L]
+
+    # Serve public files (assets, favicon, robots.txt) from Laravel's public folder.
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Never expose Laravel source, dependencies, or writable runtime files.
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|android|gradle|build|\.github|\.idea|\.gradle)(/|$) - [F,L,NC]
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|postcss\.config\.js|tailwind\.config\.js|README\.md|local\.properties|settings\.gradle\.kts|build\.gradle\.kts|gradle\.properties)(/|$) - [F,L,NC]
+
+    RewriteRule ^ index.php [L]
+</IfModule>

@@ -414,8 +414,19 @@
 
         .about-image img {
             width: 100%;
+            height: 100%;
+            min-height: 380px;
+            object-fit: cover;
+            display: block;
             border-radius: 24px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
+
+        .about-storefront-image {
+            border: 4px solid rgba(231, 173, 61, 0.45);
+            box-shadow: 0 28px 60px rgba(16, 47, 53, 0.18);
+            border-radius: 28px;
+            filter: saturate(1.08) contrast(1.04);
         }
 
         .about-text h2 {
@@ -925,7 +936,7 @@
     min-height: 100svh;
     background:
         radial-gradient(ellipse at 78% 20%, rgba(231, 173, 61, .2), transparent 30%),
-        linear-gradient(135deg, #102f35 0%, #176e6a 100%);
+        linear-gradient(135deg, #0d2d31 0%, #0f4f52 38%, #176e6a 100%);
 }
 
 .frontend-page .hero .container {
@@ -933,21 +944,34 @@
     z-index: 1;
 }
 
+.frontend-page .hero .row {
+    align-items: center;
+    gap: 24px 0;
+}
+
 .frontend-page .hero-content {
-    max-width: 590px;
+    max-width: 600px;
+    padding-right: 12px;
 }
 
 .frontend-page .hero h1 {
+    max-width: 590px;
     letter-spacing: -.045em;
-    line-height: 1.12;
+    line-height: 1.06;
+}
+
+.frontend-page .hero h1 span {
+    max-width: 560px;
 }
 
 .frontend-page .hero p {
     max-width: 520px;
+    color: rgba(255, 255, 255, .78);
 }
 
 .frontend-page .hero-buttons {
-    gap: 12px;
+    gap: 10px;
+    margin-top: 8px;
 }
 
 .frontend-page .btn-primary-hero {
@@ -1030,10 +1054,30 @@
 .frontend-page .hero {
     min-height: min(900px, 100svh);
     padding: clamp(112px, 13vh, 150px) 0 clamp(56px, 8vh, 88px);
-    background:
-        radial-gradient(ellipse at 76% 27%, rgba(231, 173, 61, .24), transparent 31%),
-        radial-gradient(ellipse at 4% 100%, rgba(61, 93, 133, .42), transparent 35%),
-        linear-gradient(125deg, #0d272c 0%, #145954 52%, #176e6a 100%);
+    background-image:
+        linear-gradient(115deg, rgba(8, 28, 31, 0.74) 0%, rgba(14, 69, 67, 0.52) 42%, rgba(17, 93, 85, 0.48) 100%),
+        var(--hero-background-image);
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.frontend-page .hero .container {
+    max-width: 1200px;
+}
+
+.frontend-page .hero .row {
+    --bs-gutter-x: clamp(28px, 4vw, 64px);
+}
+
+.frontend-page .hero .row > .col-lg-6:first-child {
+    flex: 0 0 58.333333%;
+    max-width: 58.333333%;
+}
+
+.frontend-page .hero .row > .col-lg-6:last-child {
+    flex: 0 0 41.666667%;
+    max-width: 41.666667%;
 }
 
 .frontend-page .hero::before {
@@ -1042,6 +1086,7 @@
     width: min(760px, 62vw);
     height: min(760px, 62vw);
     opacity: .7;
+    background: radial-gradient(circle, rgba(231, 173, 61, .22), transparent 62%);
 }
 
 .frontend-page .hero-badge {
@@ -1080,10 +1125,10 @@
 }
 
 .frontend-page .btn-hero {
-    min-height: 48px;
-    padding: 13px 22px;
-    border-radius: 14px;
-    font-size: .9rem;
+    min-height: 46px;
+    padding: 12px 19px;
+    border-radius: 13px;
+    font-size: .86rem;
 }
 
 .frontend-page .btn-primary-hero {
@@ -1124,34 +1169,80 @@
 }
 
 .frontend-page .hero-console {
-    max-width: 440px;
+    max-width: 430px;
     padding: 22px;
-    border-radius: 24px;
-    background: linear-gradient(145deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .045));
-    box-shadow: 0 30px 90px rgba(3, 26, 30, .3), inset 0 1px 0 rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .24);
+    border-radius: 22px;
+    background: linear-gradient(145deg, rgba(232, 246, 233, .19), rgba(16, 47, 53, .22));
+    box-shadow: 0 26px 72px rgba(3, 26, 30, .34), inset 0 1px 0 rgba(255, 255, 255, .16);
+    backdrop-filter: blur(10px);
+    transform: rotate(0);
+}
+
+.frontend-page .console-top {
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+    font-size: .73rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .72);
 }
 
 .frontend-page .service-showcase {
     margin: 18px 0;
-    border-radius: 20px;
+    padding: 14px;
+    border-radius: 18px;
     background:
         radial-gradient(ellipse at 50% 100%, rgba(231, 173, 61, .18), transparent 60%),
         linear-gradient(145deg, rgba(231, 173, 61, .15), rgba(255, 255, 255, .035));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
 .frontend-page .service-showcase-item {
+    min-height: 48px;
+    padding: 10px;
     border-color: rgba(255, 255, 255, .12);
     background: rgba(14, 26, 44, .34);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+    font-size: .82rem;
 }
 
 .frontend-page .console-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
     background: rgba(14, 26, 44, .48);
     border: 1px solid rgba(255, 255, 255, .06);
+    border-radius: 14px;
+}
+
+.frontend-page .console-status small {
+    display: block;
+    margin-top: 3px;
+    line-height: 1.55;
 }
 
 .frontend-page .console-check {
     color: #102f35;
     background: #e8edf3;
+    box-shadow: 0 8px 18px rgba(255, 255, 255, .12);
+}
+
+@media (max-width: 991.98px) {
+    .frontend-page .hero .row > .col-lg-6:first-child,
+    .frontend-page .hero .row > .col-lg-6:last-child {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .frontend-page .hero .hero-content {
+        max-width: 680px;
+    }
+
+    .frontend-page .hero-console {
+        margin-top: 12px;
+    }
 }
 
 .frontend-page .services,
@@ -1426,10 +1517,25 @@
     .frontend-page .hero {
         min-height: auto;
         padding: 124px 0 60px;
+        background-position: 62% center;
+    }
+
+    .frontend-page .hero .row {
+        --bs-gutter-x: 24px;
+    }
+
+    .frontend-page .hero .row > .col-lg-6:first-child,
+    .frontend-page .hero .row > .col-lg-6:last-child {
+        flex: 0 0 100%;
+        max-width: 100%;
     }
 
     .frontend-page .hero h1 {
         font-size: clamp(2.4rem, 9vw, 3.5rem);
+    }
+
+    .frontend-page .hero h1 span {
+        max-width: 100%;
     }
 
     .frontend-page .hero-stats {
@@ -1443,6 +1549,7 @@
 
     .frontend-page .hero-console {
         max-width: 440px;
+        margin-top: 8px;
     }
 
     .frontend-page .service-card {
