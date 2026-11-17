@@ -102,6 +102,16 @@
     font-weight: 800;
 }
 
+body img,
+body video,
+body iframe {
+    max-width: 100%;
+}
+
+body .row > [class*="col-"] {
+    min-width: 0;
+}
+
 @media (max-width: 575px) {
     .frontend-page img,
     .frontend-page iframe,
@@ -182,5 +192,61 @@
         margin-left: 0;
         text-align: center;
         display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    body .container {
+        width: 100%;
+        max-width: 100%;
+        padding-inline: clamp(16px, 4vw, 24px);
+    }
+
+    body .page-header {
+        padding: 120px 0 56px;
+    }
+
+    body .contact-section,
+    body .services-section,
+    body .products-section,
+    body .about-section {
+        padding-block: clamp(48px, 9vw, 70px);
+    }
+
+    body .contact-info,
+    body .contact-form,
+    body .about-content {
+        padding: clamp(20px, 5vw, 32px);
+    }
+
+    body .contact-item {
+        gap: 14px;
+    }
+
+    body .contact-item p,
+    body .about-content p,
+    body .page-header p {
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 480px) {
+    body .container {
+        padding-inline: 16px;
+    }
+
+    body .page-header h1 {
+        font-size: clamp(1.8rem, 8vw, 2.25rem);
+    }
+
+    body .contact-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.35rem;
+    }
+
+    body .contact-form-title,
+    body .about-content h2 {
+        font-size: clamp(1.45rem, 7vw, 1.85rem);
     }
 }

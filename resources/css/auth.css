@@ -269,6 +269,17 @@ body {
     text-align: center;
     font-size: 0.9rem;
 }
+@media (max-width: 900px) {
+    .auth-shell {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    }
+    .auth-aside {
+        padding-inline: clamp(24px, 4vw, 42px);
+    }
+    .auth-main {
+        padding-inline: clamp(20px, 4vw, 42px);
+    }
+}
 @media (max-width: 760px) {
     .auth-shell {
         display: block;
@@ -294,5 +305,27 @@ body {
     }
     .auth-card-header h2 {
         font-size: 1.7rem;
+    }
+}
+@media (max-width: 480px) {
+    .auth-aside {
+        min-height: 205px;
+        padding: 22px 18px;
+    }
+    .auth-aside h1 {
+        font-size: clamp(1.7rem, 8vw, 2rem);
+    }
+    .auth-main {
+        padding: 18px 12px 28px;
+    }
+    .auth-card {
+        padding: 22px 18px;
+    }
+    .auth-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+    .auth-actions .auth-button {
+        width: 100%;
     }
 }

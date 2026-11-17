@@ -427,6 +427,36 @@
     }
 }
 
+@media (max-width: 420px) {
+    .navbar .container {
+        gap: 8px;
+    }
+
+    .navbar .navbar-brand {
+        min-width: 0;
+        gap: 8px;
+    }
+
+    .navbar .navbar-brand .frontend-brand-logo {
+        width: 48px;
+        height: 40px;
+    }
+
+    .navbar .brand-text strong {
+        font-size: .82rem;
+    }
+
+    .navbar .brand-text small {
+        font-size: .52rem;
+        letter-spacing: .09em;
+    }
+
+    .navbar .nav-toggle {
+        width: 40px;
+        height: 40px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .navbar *,
     .navbar *::before,

@@ -598,6 +598,14 @@
     box-shadow: 0 5px 20px rgba(22, 55, 53, .045);
 }
 
+@media (max-width: 1024px) {
+    .backend-page .dashboard-hero {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+}
+
 @media (max-width: 900px) {
     .backend-page .topbar {
         padding-right: 20px;
@@ -625,6 +633,15 @@
         padding: 20px 16px 32px;
     }
 
+    .backend-page .content-wrapper,
+    .backend-page .main-content,
+    .backend-page .topbar,
+    .backend-page .row > *,
+    .backend-page .card,
+    .backend-page .card-body {
+        min-width: 0;
+    }
+
     .backend-page .topbar {
         min-height: 66px;
         gap: 12px;
@@ -649,12 +666,47 @@
         border-radius: 17px;
     }
 
+    .backend-page .card-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
     .backend-page .card-body {
         padding: 18px;
+    }
+
+    .backend-page .table-responsive {
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+    }
+
+    .backend-page .alert,
+    .backend-page .topbar,
+    .backend-page .card {
+        overflow-wrap: anywhere;
+    }
+
+    .backend-page .btn-group {
+        flex-wrap: wrap;
+    }
+
+    .backend-page .form-control,
+    .backend-page .form-select {
+        max-width: 100%;
     }
 }
 
 @media (max-width: 576px) {
+    .backend-page .main-content {
+        padding: 18px 12px 28px;
+    }
+
+    .backend-page .card-header,
+    .backend-page .card-body {
+        padding: 16px;
+    }
+
     .backend-page .dashboard-hero-action {
         white-space: normal;
     }
@@ -677,6 +729,10 @@
     .backend-page .booking-service-option {
         gap: 10px;
         padding: 14px;
+    }
+
+    .backend-page .pagination {
+        flex-wrap: wrap;
     }
 }
 
