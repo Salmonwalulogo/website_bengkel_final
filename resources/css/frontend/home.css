@@ -1070,14 +1070,57 @@
     --bs-gutter-x: clamp(28px, 4vw, 64px);
 }
 
-.frontend-page .hero .row > .col-lg-6:first-child {
-    flex: 0 0 58.333333%;
-    max-width: 58.333333%;
+.frontend-page .hero .row > .col-lg-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
 }
 
-.frontend-page .hero .row > .col-lg-6:last-child {
-    flex: 0 0 41.666667%;
-    max-width: 41.666667%;
+.frontend-page .hero .hero-content {
+    max-width: 1100px;
+    margin-inline: auto;
+    text-align: center;
+}
+
+.frontend-page .hero-badge {
+    margin-inline: auto;
+}
+
+.frontend-page .hero h1 {
+    max-width: 1100px;
+    margin-inline: auto;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, .38);
+}
+
+.frontend-page .hero h1 span {
+    margin-inline: auto;
+}
+
+.frontend-page .hero h1 .hero-brand-name {
+    width: max-content;
+    max-width: 100%;
+    color: #fff;
+    background: none;
+    -webkit-text-fill-color: #fff;
+    white-space: nowrap;
+    letter-spacing: .025em;
+}
+
+.frontend-page .hero h1 span:not(.hero-brand-name) {
+    width: 100%;
+    font-size: clamp(2rem, 4.4vw, 3.8rem);
+    letter-spacing: -.02em;
+    white-space: normal;
+}
+
+.frontend-page .hero p {
+    margin-inline: auto;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, .6);
+    font-size: 1.2rem;
+    line-height: 1.75;
+}
+
+.frontend-page .hero-buttons {
+    justify-content: center;
 }
 
 .frontend-page .hero::before {
@@ -1099,7 +1142,7 @@
 }
 
 .frontend-page .hero h1 {
-    max-width: 660px;
+    max-width: 1100px;
     margin-bottom: 20px;
     font-size: clamp(2.65rem, 5vw, 4.25rem);
     line-height: 1.09;
@@ -1230,18 +1273,8 @@
 }
 
 @media (max-width: 991.98px) {
-    .frontend-page .hero .row > .col-lg-6:first-child,
-    .frontend-page .hero .row > .col-lg-6:last-child {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-
     .frontend-page .hero .hero-content {
-        max-width: 680px;
-    }
-
-    .frontend-page .hero-console {
-        margin-top: 12px;
+        max-width: 1100px;
     }
 }
 
@@ -1538,6 +1571,11 @@
         max-width: 100%;
     }
 
+    .frontend-page .hero h1 span:not(.hero-brand-name) {
+        font-size: inherit;
+        white-space: normal;
+    }
+
     .frontend-page .hero-stats {
         margin-top: 30px;
         padding-top: 20px;
@@ -1545,11 +1583,6 @@
 
     .frontend-page .stat-item h3 {
         font-size: 1.8rem;
-    }
-
-    .frontend-page .hero-console {
-        max-width: 440px;
-        margin-top: 8px;
     }
 
     .frontend-page .service-card {

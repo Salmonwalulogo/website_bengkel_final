@@ -34,7 +34,7 @@
                             Beragam jasa untuk kebutuhan Anda
                         </div>
                         <h1>
-                            UD Rumah Daun
+                            <span class="hero-brand-name">UD RUMAH DAUN</span>
                             <span>Beragam jasa, produk, sewa, dan layanan untuk Anda</span>
                         </h1>
                         <p>
@@ -54,19 +54,6 @@
                                 Hubungi Kami
                             </a>
                         </div>
-                    </div>
-                </div>
-                <div class="col-lg-6" data-aos="fade-left">
-                    <div class="hero-console">
-                        <div class="console-top"><span>STATUS USAHA</span><span class="console-live"><i class="bi bi-circle-fill me-1"></i> Siap melayani</span></div>
-                        <div class="service-showcase" aria-label="Layanan UD Rumah Daun">
-                            @forelse($services->take(5) as $service)
-                                <div class="service-showcase-item"><i class="bi bi-stars"></i><span>{{ $service->name }}</span></div>
-                            @empty
-                                <div class="service-showcase-item"><i class="bi bi-shop"></i><span>Produk dan layanan</span></div>
-                            @endforelse
-                        </div>
-                        <div class="console-status"><span class="console-check"><i class="bi bi-check2"></i></span>                        <div><strong>Permintaan terpantau</strong><small>Admin akan mengonfirmasi ketersediaan sebelum pembayaran diproses.</small></div></div>
                     </div>
                 </div>
             </div>
